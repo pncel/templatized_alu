@@ -1,0 +1,18 @@
+module {{ module_name }} #(
+    parameter WIDTH = {{ width }}
+)(
+    input logic [WIDTH-1:0] in[{{ num_inputs }}],
+    input logic [$clog2({{ num_inputs }})-1:0] sel,
+    output logic [WIDTH-1:0] out
+);
+
+always_comb begin
+    case (sel)
+    {%- for i in range(num_inputs) %}
+        {{ i }}: out = in[{{ i }}];
+    {%- endfor %}
+        default: out = '0;
+    endcase
+end
+
+endmodule
