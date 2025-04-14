@@ -1,0 +1,60 @@
+// alu_{{ width }}bit.sv
+module alu_{{ width }}bit (
+    input  logic [{{ width-1 }}:0] A,
+    input  logic [{{ width-1 }}:0] B,
+    input  logic [2:0] opcode,
+    output logic [{{ width-1 }}:0] result
+);
+
+    logic [{{ width-1 }}:0] _a, _b;
+    logic [{{ width-1 }}:0] add_sub_result;
+    logic carry_in;
+
+    // Shared input path
+    _a = A;
+    _b = B;
+    carry_in = 1'b0;
+
+    {% if 'add' in ops or 'sub' in ops %}
+    // Adjust B and carry_in if subtraction is enabled
+    {% if 'sub' in ops %}
+    logic is_sub = (opcode == 3'b001);  // assume sub is opcode 001
+    logic [{{ width-1 }}:0] _b_mod = is_sub ? ~B : B;
+    logic _cin = is_sub ? 1'b1 : 1'b0;
+    {_cout, add_sub_result} = _a + _b_mod + _cin;
+    {% else %}
+    {_cout, add_sub_result} = _a + _b + carry_in;
+    {% endif %}
+    {% endif %}
+
+    {% if 'lt' in ops or 'gt' in ops %}
+    logic cmp_result;
+    {% if 'gt' in ops %}
+    logic gt_result = (A > B);
+    {% endif %}
+    {% if 'lt' in ops %}
+    logic lt_result = (A < B);
+    {% endif %}
+    {% endif %}
+
+    // Output mux
+    always_comb begin
+        result = '0;
+        case (opcode)
+            {% if 'add' in ops %}
+            3'b000: result = add_sub_result;
+            {% endif %}
+            {% if 'sub' in ops %}
+            3'b001: result = add_sub_result;
+            {% endif %}
+            {% if 'gt' in ops %}
+            3'b010: result = {{ width }}'(gt_result);
+            {% endif %}
+            {% if 'lt' in ops %}
+            3'b011: result = {{ width }}'(lt_result);
+            {% endif %}
+            default: result = '0;
+        endcase
+    end
+
+endmodule
