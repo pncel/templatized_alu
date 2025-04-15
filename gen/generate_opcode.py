@@ -1,6 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 
 # dictionary to check which operations the user has selected
+# Extend operations for signed and unsigned (gts, lts, etc.)
 user_checklist = {
     "add": True,
     "sub": True,
@@ -16,6 +17,7 @@ custom_opcodes = {
     "lt": None,
 }
 
+# include logic for signed/unsigned
 port_size = 32
 
 module_name = "Add ALU"
