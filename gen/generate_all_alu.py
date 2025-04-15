@@ -8,7 +8,7 @@ env = Environment(
     trim_blocks=True,
     lstrip_blocks=True
 )
-template = env.get_template("adder_template.sv.j2")
+template = env.get_template("alu_template.sv.j2")
 
 # All possible operations
 all_ops = ["add", "sub", "lt", "gt"]
