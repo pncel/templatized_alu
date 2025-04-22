@@ -1,0 +1,61 @@
+module {{ module_name }}(
+    input [{{ port_size }}-1:0] A,
+    input [{{ port_size }}-1:0] B,
+
+    input logic [{{ op_width }}-1:0] op,
+    output logic [{{ port_size }}-1:0] result
+);
+    logic [{{ port_size }}-1:0] _A, _B;
+    logic _cout, _cin;
+    
+    // Define local parameters for opcodes based on enabled operations
+    {% if ops.add %}
+    localparam [{{ op_width }}-1:0] OPCODE_ADD = {{ op_code.add }};
+    {% endif %}
+    {% if ops.sub %}
+    localparam [{{ op_width }}-1:0] OPCODE_SUB = {{ op_code.sub }};
+    {% endif %}
+    {% if ops.gt %}
+    localparam [{{ op_width }}-1:0] OPCODE_GT  = {{ op_code.gt }};
+    {% endif %}
+    {% if ops.lt %}
+    localparam [{{ op_width }}-1:0] OPCODE_LT  = {{ op_code.lt }};
+    {% endif %}
+
+    always @* begin
+        case (op)
+            {% if ops.sub %}
+                OPCODE_SUB: begin
+                    _A = A;
+                    _B = ~B;
+                    _cin = 1'b1;
+                end
+            {% endif %}
+            {% if ops.add %}
+                OPCODE_ADD: begin
+                    _A = A;
+                    _B = B;
+                    _cin = 1'b0;
+                end
+            {% endif %}
+            {% if ops.gt %}
+                OPCODE_GT: begin
+                    _A = A;
+                    _B = B;
+                    _cin = 1'b0;
+                end
+            {% endif %}
+            {% if ops.lt %}
+                OPCODE_LT: begin
+                    _A = A;
+                    _B = B;
+                    _cin = 1'b0;
+                end
+            {% endif %}
+        endcase
+    end
+
+    // Core logic
+    assign {_cout, result} = _A + _B + _cin;
+
+endmodule
