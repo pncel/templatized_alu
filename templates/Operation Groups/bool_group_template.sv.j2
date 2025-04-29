@@ -1,0 +1,94 @@
+// alu_{{ width }}bit_{{ ops | join('_') }}.sv
+module alu_{{ width }}bit_{{ ops | join('_') }} (
+    input  logic [{{ width-1 }}:0] A,
+    input  logic [{{ width-1 }}:0] B,
+    input  logic [{{ op_width-1 }}:0] opcode,
+    output logic [{{ width-1 }}:0] result
+);
+
+    // Localparam opcodes
+    {% if 'le' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_LE   = {{ op_codes['le'] }};
+    {% endif %}
+    {% if 'ge' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_GE   = {{ op_codes['ge'] }};
+    {% endif %}
+    {% if 'xor' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_XOR  = {{ op_codes['xor'] }};
+    {% endif %}
+    {% if 'eq' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_EQ   = {{ op_codes['eq'] }};
+    {% endif %}
+    {% if 'ne' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_NE   = {{ op_codes['ne'] }};
+    {% endif %}
+    {% if 'and' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_AND  = {{ op_codes['and'] }};
+    {% endif %}
+    {% if 'or' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_OR   = {{ op_codes['or'] }};
+    {% endif %}
+    {% if 'not' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_NOT  = {{ op_codes['not'] }};
+    {% endif %}
+    {% if 'nand' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_NAND = {{ op_codes['nand'] }};
+    {% endif %}
+    {% if 'nor' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_NOR  = {{ op_codes['nor'] }};
+    {% endif %}
+    {% if 'xnor' in ops %}
+    localparam [{{ op_width-1 }}:0] OPCODE_XNOR = {{ op_codes['xnor'] }};
+    {% endif %}
+
+    // Result logic
+    always_comb begin
+        result = '0;
+
+        {% if 'le' in ops %}
+        if (opcode == OPCODE_LE)
+            result = (A <= B);
+        {% endif %}
+        {% if 'ge' in ops %}
+        if (opcode == OPCODE_GE)
+            result = (A >= B);
+        {% endif %}
+        {% if 'xor' in ops %}
+        if (opcode == OPCODE_XOR)
+            result = A ^ B;
+        {% endif %}
+        {% if 'eq' in ops %}
+        if (opcode == OPCODE_EQ)
+            result = (A == B);
+        {% endif %}
+        {% if 'ne' in ops %}
+        if (opcode == OPCODE_NE)
+            result = (A != B);
+        {% endif %}
+        {% if 'and' in ops %}
+        if (opcode == OPCODE_AND)
+            result = A & B;
+        {% endif %}
+        {% if 'or' in ops %}
+        if (opcode == OPCODE_OR)
+            result = A | B;
+        {% endif %}
+        {% if 'not' in ops %}
+        if (opcode == OPCODE_NOT)
+            result = ~A;
+        {% endif %}
+        {% if 'nand' in ops %}
+        if (opcode == OPCODE_NAND)
+            result = ~(A & B);
+        {% endif %}
+        {% if 'nor' in ops %}
+        if (opcode == OPCODE_NOR)
+            result = ~(A | B);
+        {% endif %}
+        {% if 'xnor' in ops %}
+        if (opcode == OPCODE_XNOR)
+            result = ~(A ^ B);
+        {% endif %}
+    end
+
+endmodule
