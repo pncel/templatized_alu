@@ -1,0 +1,84 @@
+// alu_{{ width }}bit_{{ ops | join('_') }}.sv
+module alu_{{ width }}bit_{{ ops | join('_') }} (
+    input  logic [{{ width-1 }}:0] A,
+    input  logic [{{ width-1 }}:0] B,
+    input  logic [{{ op_width - 1 }}:0] opcode,
+    output logic [{{ width-1 }}:0] result
+);
+
+    // Define local parameters for opcodes based on enabled operations
+    {% if 'add' in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_ADD = {{ op_code.add }};
+    {% endif %}
+    {% if 'sub' in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_SUB = {{ op_code.sub }};
+    {% endif %}
+    {% if 'lt' in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_LT = {{ op_code.lt }};
+    {% endif %}
+    {% if 'gt' in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_GT = {{ op_code.gt }};
+    {% endif %}
+    {% if 'le' in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_LE = {{ op_code.le }};
+    {% endif %}
+    {% if 'ge' in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_GE = {{ op_code.ge }};
+    {% endif %}
+
+    logic [{{ width-1 }}:0] _a = A;
+    logic [{{ width-1 }}:0] _b = B;
+    logic [{{ width-1 }}:0] result_internal;
+
+    {% if 'add' in ops or 'sub' in ops %}
+    logic [{{ width-1 }}:0] add_sub_result;
+    logic carry_in = 1'b0;
+    {% if 'sub' in ops %}
+    logic is_sub = (opcode == OPCODE_SUB);
+    wire [{{ width-1 }}:0] _b_mod = is_sub ? ~_b : _b;
+    carry_in = is_sub ? 1'b1 : 1'b0;
+    add_sub_result = _a + _b_mod + carry_in;
+    {% else %}
+    add_sub_result = _a + _b;
+    {% endif %}
+
+    {% if 'lt' in ops %}
+    logic lt_result = ($signed(_a) < $signed(_b));
+    {% endif %}
+    {% if 'gt' in ops %}
+    logic gt_result = ($signed(_a) > $signed(_b));
+    {% endif %}
+    {% if 'le' in ops %}
+    logic le_result = ($signed(_a) <= $signed(_b));
+    {% endif %}
+    {% if 'ge' in ops %}
+    logic ge_result = ($signed(_a) >= $signed(_b));
+    {% endif %}
+
+    always_comb begin
+        case (opcode)
+            {% if 'add' in ops %}
+            OPCODE_ADD: result_internal = add_sub_result;
+            {% endif %}
+            {% if 'sub' in ops %}
+            OPCODE_SUB: result_internal = add_sub_result;
+            {% endif %}
+            {% if 'lt' in ops %}
+            OPCODE_LT: result_internal = {{ width }}'(lt_result);
+            {% endif %}
+            {% if 'gt' in ops %}
+            OPCODE_GT: result_internal = {{ width }}'(gt_result);
+            {% endif %}
+            {% if 'le' in ops %}
+            OPCODE_LE: result_internal = {{ width }}'(le_result);
+            {% endif %}
+            {% if 'ge' in ops %}
+            OPCODE_GE: result_internal = {{ width }}'(ge_result);
+            {% endif %}
+            default: result_internal = '0;
+        endcase
+    end
+
+    assign result = result_internal;
+
+endmodule
