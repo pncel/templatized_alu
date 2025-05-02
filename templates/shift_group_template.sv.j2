@@ -40,7 +40,7 @@ module alu_{{ width }}bit_shift_{{ ops | join('_') }} (
             {% if 'rotationright' in ops %}
             OPCODE_ROT_RIGHT:  result = (A >> B) | (A << ({{ width }} - B));
             {% endif %}
-            default:           result = '0;
+            default:           result = 0;
         endcase
     end
 
