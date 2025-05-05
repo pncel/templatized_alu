@@ -1,15 +1,14 @@
-// top_level_alu_template_v1.sv.j2
 module templatized_alu (
-  input logic [32-1:0]    A,
-  input logic [32-1:0]    B,
-  input logic [3-1:0] op,
-
-  input logic [$clog2(3)-1:0] sel,
-  output logic [32-1:0]   out
+  input logic [16-1:0]    A,
+  input logic [16-1:0]    B,
+  input logic [4-1:0] op,
+  output logic [16-1:0]   out
 );
 
-  logic [32-1:0] temp [3-1:0];
+  logic [16-1:0] temp [3-1:0];
+  logic [1:0] sel;
 
+  // Instantiate ALU groups
   alu_add alu_add_inst_0 (
     .A     (A),
     .B     (B),
@@ -29,7 +28,14 @@ module templatized_alu (
     .result(temp[2])
   );
 
-  mux_generic #(.NUM_INPUTS(3)) mux_generic_inst (
+  // Instantiate control module
+  templatized_alu_control control_inst (
+    .op_code (op),
+    .select  (sel)
+  );
+
+  // Instantiate mux
+  mux_generic mux_generic_inst (
     .in  (temp),
     .sel (sel),
     .out (out)

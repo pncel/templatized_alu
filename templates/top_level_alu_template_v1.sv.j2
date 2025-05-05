@@ -1,15 +1,14 @@
-// top_level_alu_template_v1.sv.j2
 module {{ module_name }} (
   input logic [{{width}}-1:0]    A,
   input logic [{{width}}-1:0]    B,
   input logic [{{op_width}}-1:0] op,
-
-  input logic [$clog2({{group_list|length}})-1:0] sel,
   output logic [{{width}}-1:0]   out
 );
 
   logic [{{width}}-1:0] temp [{{group_list|length}}-1:0];
+  logic [{{ sel_width - 1 }}:0] sel;
 
+  // Instantiate ALU groups
   {% for i, group in group_list|enumerate %}
   alu_{{group}} alu_{{group}}_inst_{{i}} (
     .A     (A),
@@ -19,7 +18,14 @@ module {{ module_name }} (
   );
   {% endfor %}
 
-  mux_generic #(.NUM_INPUTS({{group_list|length}})) mux_generic_inst (
+  // Instantiate control module
+  {{ module_name }}_control control_inst (
+    .op_code (op),
+    .select  (sel)
+  );
+
+  // Instantiate mux
+  mux_generic mux_generic_inst (
     .in  (temp),
     .sel (sel),
     .out (out)

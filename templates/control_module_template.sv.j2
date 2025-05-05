@@ -1,0 +1,17 @@
+module {{ module_name }}_control (
+    input  logic [{{ op_width - 1 }}:0] op_code,
+    output logic [{{ sel_width - 1 }}:0] select
+);
+
+always_comb begin
+    unique case (op_code)
+    {% for group_idx, group_name in group_list | enumerate %}
+        {% for op in groups[group_name] %}
+            {{ op_width }}'b{{ op_code[op] }}: select = {{ sel_width }}'d{{ group_idx }};
+        {% endfor %}
+    {% endfor %}
+    default: select = {{ sel_width }}'d0; // fallback
+    endcase
+end
+
+endmodule

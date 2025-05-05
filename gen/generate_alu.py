@@ -4,9 +4,9 @@ import math
 
 # === User Configuration ===
 module_name = "templatized_alu"
-width = 32
+width = 16
 # List of user-selected operations
-user_ops = ["add", "lt", "sub", "sll", "xor", "ne"]
+user_ops = ["add", "sub", "le", "xor", "sll", "sar", "rotationleft", "rotationright"]
 
 # === Define Operation Groups ===
 group_map = {
@@ -63,7 +63,6 @@ env = Environment(
     loader=FileSystemLoader("templates"),
     trim_blocks=True,
     lstrip_blocks=True,
-    extensions=["jinja2.ext.do"]
 )
 
 # add enumerate() as a filter:
@@ -91,6 +90,26 @@ for group in group_map.keys(): # ["addgroup", "boolgroup", "shiftgroup"]:
         print(f"✅ Generated {path}")
 
 
+# === Render control module === #
+
+# Determine the number of bits needed to select a group
+sel_width = max(1, math.ceil(math.log2(len(group_list))))
+
+
+control_tmpl = env.get_template("control_module_template.sv.j2")
+control_rendered = control_tmpl.render(
+    module_name=module_name,
+    op_width=op_width,
+    sel_width=sel_width,
+    groups=active_groups,
+    group_list=group_list,
+    op_code={ op: default_opcodes[op] for op in flattened_ops }
+)
+control_path = os.path.join(output_dir, f"{module_name}_control.sv")
+with open(control_path, "w") as f:
+    f.write(control_rendered)
+print(f"✅ Generated {control_path}")
+
 # === Render top-level ALU Template === #
 top_template = env.get_template("top_level_alu_template_v1.sv.j2")
 
@@ -103,6 +122,7 @@ rendered = top_template.render(
     groups=active_groups,
     group_list=group_list,
     active_group_count=active_group_count,
+    sel_width=sel_width,
 )
 
 top_path = os.path.join(output_dir, f"{module_name}.sv")

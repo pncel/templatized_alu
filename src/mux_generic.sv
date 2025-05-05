@@ -1,7 +1,7 @@
 module mux_generic (
-    input logic [3] [32-1:0] in,
+    input logic [3] [16-1:0] in,
     input logic [$clog2(3)-1:0] sel,
-    output logic [32-1:0] out
+    output logic [16-1:0] out
 );
 
 always_comb begin

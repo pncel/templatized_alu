@@ -1,23 +1,23 @@
-// alu_32bit_xor_ne.sv
-module alu_32bit_xor_ne (
-    input  logic [31:0] A,
-    input  logic [31:0] B,
-    input  logic [2:0] opcode,
-    output logic [31:0] result
+// alu_16bit_le_xor.sv
+module alu_16bit_le_xor (
+    input  logic [15:0] A,
+    input  logic [15:0] B,
+    input  logic [3:0] opcode,
+    output logic [15:0] result
 );
 
     // Localparam opcodes
-    localparam [2:0] OPCODE_XOR  = 011;
-    localparam [2:0] OPCODE_NE   = 100;
+    localparam [3:0] OPCODE_LE   = 0011;
+    localparam [3:0] OPCODE_XOR  = 0100;
 
     // Result logic
     always_comb begin
         result = '0;
 
+        if (opcode == OPCODE_LE)
+            result = (A <= B);
         if (opcode == OPCODE_XOR)
             result = A ^ B;
-        if (opcode == OPCODE_NE)
-            result = (A != B);
     end
 
 endmodule
