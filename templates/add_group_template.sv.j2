@@ -41,6 +41,7 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
     {% else %}
     add_sub_result = _a + _b;
     {% endif %}
+    {% endif %}
 
     {% if 'lt' in ops %}
     logic lt_result = ($signed(_a) < $signed(_b));
@@ -75,7 +76,7 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
             {% if 'ge' in ops %}
             OPCODE_GE: result_internal = {{ width }}'(ge_result);
             {% endif %}
-            default: result_internal = '0;
+            default: result_internal = 0;
         endcase
     end
 
