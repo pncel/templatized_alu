@@ -7,10 +7,10 @@ module alu_16bit_shift_sll_sar_rotationleft_rotationright (
 );
 
     // Localparam opcodes
-    localparam [3:0] OPCODE_SLL = 0101;
-    localparam [3:0] OPCODE_SAR = 0110;
-    localparam [3:0] OPCODE_ROT_LEFT = 0111;
-    localparam [3:0] OPCODE_ROT_RIGHT = 1000;
+    localparam [3:0] OPCODE_SLL = 0110;
+    localparam [3:0] OPCODE_SAR = 0111;
+    localparam [3:0] OPCODE_ROT_LEFT = 1000;
+    localparam [3:0] OPCODE_ROT_RIGHT = 1001;
 
     always_comb begin
         case (opcode)

@@ -6,7 +6,7 @@ import math
 module_name = "templatized_alu"
 width = 16
 # List of user-selected operations
-user_ops = ["add", "sub", "le", "xor", "sll", "sar", "rotationleft", "rotationright"]
+user_ops = ["add", "gt", "sub", "le", "xor", "sll", "sar", "rotationleft", "rotationright"]
 
 # === Define Operation Groups ===
 group_map = {

@@ -7,8 +7,8 @@ module alu_16bit_le_xor (
 );
 
     // Localparam opcodes
-    localparam [3:0] OPCODE_LE   = 0011;
-    localparam [3:0] OPCODE_XOR  = 0100;
+    localparam [3:0] OPCODE_LE   = 0100;
+    localparam [3:0] OPCODE_XOR  = 0101;
 
     // Result logic
     always_comb begin
