@@ -2,7 +2,7 @@ module templatized_alu (
   input  logic                  clk,
   input  logic [16-1:0]  A,
   input  logic [16-1:0]  B,
-  input  logic [4-1:0] op,
+  input  logic [3-1:0] op,
   output logic [16-1:0]  out
 );
 

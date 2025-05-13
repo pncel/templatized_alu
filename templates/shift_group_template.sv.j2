@@ -3,25 +3,14 @@ module alu_{{ width }}bit_shift_{{ ops | join('_') }} (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B, // B used for shift amount
     input  logic [{{ op_width-1 }}:0] opcode,
+    input logic en,
     output logic [{{ width-1 }}:0] result
 );
 
     // Localparam opcodes
-    {% if 'sll' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_SLL = {{ op_code.sll }};
-    {% endif %}
-    {% if 'srl' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_SRL = {{ op_code.srl }};
-    {% endif %}
-    {% if 'sar' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_SAR = {{ op_code.sar }};
-    {% endif %}
-    {% if 'rotationleft' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_ROT_LEFT = {{ op_code.rotationleft }};
-    {% endif %}
-    {% if 'rotationright' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_ROT_RIGHT = {{ op_code.rotationright }};
-    {% endif %}
+    {% for op in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
+    {% endfor %}
 
     always_comb begin
         case (opcode)
