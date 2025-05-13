@@ -3,43 +3,14 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B,
     input  logic [{{ op_width-1 }}:0] opcode,
+    input logic en,
     output logic [{{ width-1 }}:0] result
 );
 
     // Localparam opcodes
-    {% if 'le' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_LE   = {{ op_codes['le'] }};
-    {% endif %}
-    {% if 'ge' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_GE   = {{ op_codes['ge'] }};
-    {% endif %}
-    {% if 'xor' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_XOR  = {{ op_codes['xor'] }};
-    {% endif %}
-    {% if 'eq' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_EQ   = {{ op_codes['eq'] }};
-    {% endif %}
-    {% if 'ne' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_NE   = {{ op_codes['ne'] }};
-    {% endif %}
-    {% if 'and' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_AND  = {{ op_codes['and'] }};
-    {% endif %}
-    {% if 'or' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_OR   = {{ op_codes['or'] }};
-    {% endif %}
-    {% if 'not' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_NOT  = {{ op_codes['not'] }};
-    {% endif %}
-    {% if 'nand' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_NAND = {{ op_codes['nand'] }};
-    {% endif %}
-    {% if 'nor' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_NOR  = {{ op_codes['nor'] }};
-    {% endif %}
-    {% if 'xnor' in ops %}
-    localparam [{{ op_width-1 }}:0] OPCODE_XNOR = {{ op_codes['xnor'] }};
-    {% endif %}
+    {% for op in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
+    {% endfor %}
 
     // Result logic
     always_comb begin

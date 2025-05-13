@@ -3,6 +3,7 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B,
     input  logic [{{ op_width - 1 }}:0] opcode,
+    input logic en,
     output logic [{{ width-1 }}:0] result
 );
 
@@ -10,7 +11,7 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
     // avoid single line if statements here. Use for loops. 
     // using for loop to define local parameters for all operations
     {% for op in ops %}
-    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ '%0{}b'.format(op_width)|format(op_code[op]) }};
+    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
     {% endfor %}
 
     logic [{{ width-1 }}:0] _a = A;
@@ -26,11 +27,8 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
     carry_in = is_sub ? 1'b1 : 1'b0;
     add_sub_result = _a + _b_mod + carry_in;
     {% else %}
-<<<<<<< Updated upstream:templates/Operation Groups/add_group_template.sv.j2
-    add_sub_result = _a + _b;
-=======
     add_sub_result = _a + _b; // use significant bits instead of <><=>=
->>>>>>> Stashed changes:templates/add_group_template.sv.j2
+    {% endif %}
     {% endif %}
 
     {% if 'lt' in ops %}
@@ -66,7 +64,7 @@ module alu_{{ width }}bit_{{ ops | join('_') }} (
             {% if 'ge' in ops %}
             OPCODE_GE: result_internal = {{ width }}'(ge_result);
             {% endif %}
-            default: result_internal = '0;
+            default: result_internal = 0;
         endcase
     end
 
