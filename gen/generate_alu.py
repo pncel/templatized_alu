@@ -6,7 +6,7 @@ import math
 module_name = "alu32bit"
 width = 32
 # List of user-selected operations
-user_ops = ["add", "lt"]
+user_ops = ["add", "sub", "le", "xor", "sll", "sar", "rotationleft", "rotationright"] # for loops tbd
 
 # === Define Operation Groups ===
 group_map = {
