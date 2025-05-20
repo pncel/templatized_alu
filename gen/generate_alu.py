@@ -2,13 +2,11 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import math
 
-print("👀 Current Working Directory:", os.getcwd())
-
 # === User Configuration ===
 module_name = "templatized_alu"
-width = 16
+width = 32
 # List of user-selected operations
-user_ops = ["add", "sub", "nor", "sll", "sar", "rotationleft", "rotationright"]
+user_ops = ["xor", "sll", "sar", "rotationleft", "rotationright"]
 
 # === Define Operation Groups ===
 group_map = {
@@ -62,9 +60,9 @@ for index, op in enumerate(flattened_ops):
 
 # === Jinja2 Rendering === # 
 env = Environment(
-    loader=FileSystemLoader("templates"),
-    trim_blocks=True,
-    lstrip_blocks=True,
+    loader        = FileSystemLoader("templates"),
+    trim_blocks   = True,
+    lstrip_blocks = True,
 )
 
 # add enumerate() as a filter:
@@ -100,12 +98,12 @@ sel_width = max(1, math.ceil(math.log2(len(group_list))))
 
 control_tmpl = env.get_template("control_module_template.sv.j2")
 control_rendered = control_tmpl.render(
-    module_name=module_name,
-    op_width=op_width,
-    sel_width=sel_width,
-    groups=active_groups,
-    group_list=group_list,
-    op_code={ op: default_opcodes[op] for op in flattened_ops }
+    module_name = module_name,
+    op_width    = op_width,
+    sel_width   = sel_width,
+    groups      = active_groups,
+    group_list  = group_list,
+    op_code     = { op: default_opcodes[op] for op in flattened_ops }
 )
 control_path = os.path.join(output_dir, f"{module_name}_control.sv")
 with open(control_path, "w") as f:
@@ -137,6 +135,7 @@ print(f"✅ Generated {top_path}")
 # === Generate Mux === #
 mux_tmpl = env.get_template("Mux_template.sv.j2")
 mux_rendered = mux_tmpl.render(
+    group_list = group_list,
     num_inputs = active_group_count,
     width      = width
 )

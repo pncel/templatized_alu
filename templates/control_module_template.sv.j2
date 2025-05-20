@@ -1,18 +1,26 @@
 module {{ module_name }}_control (
-    input  logic [{{ op_width - 1 }}:0] op_code,
-    output logic [{{ group_list | length - 1 }}:0] en
+    input  logic [{{ op_width-1 }}:0] op_code,
+    output logic [{{ group_list|length-1 }}:0] en
 );
 
-always_comb begin
-    en = {{ group_list | length }}'b0;
-    unique case (op_code)
+    // define every opcode as a named constant
     {% for op, bitcode in op_code.items() %}
-        {{ op_width }}'b{{ bitcode }}: en = { {% for group in group_list -%}
-            {% if op in groups[group] %}1{% else %}0{% endif %}{% if not loop.last %}, {% endif %}
-        {%- endfor %} };
+    localparam logic [{{ op_width-1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ bitcode }};
     {% endfor %}
-        default: en = {{ group_list | length }}'b0;
-    endcase
-end
+
+    always_comb begin
+        // default: all groups disabled
+        en = {{ group_list|length }}'b0;
+        unique case (op_code)
+            {% for op, bitcode in op_code.items() %}
+            OPCODE_{{ op.upper() }}: en = {
+                {%- for grp in group_list -%}
+                    {{ "1'b1" if op in groups[grp] else "1'b0" }}{% if not loop.last %}, {% endif %}
+                {%- endfor -%}
+            };  // {{ op }}
+            {% endfor %}
+            default: en = {{ group_list|length }}'b0;
+        endcase
+    end
 
 endmodule

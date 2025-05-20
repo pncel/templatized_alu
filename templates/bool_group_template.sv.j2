@@ -1,5 +1,6 @@
 // alu_{{ width }}bit_{{ ops | join('_') }}.sv
-module alu_{{ width }}bit_{{ ops | join('_') }} (
+// module alu_{{ width }}bit_{{ ops | join('_') }} (
+module alu_bool (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B,
     input  logic [{{ op_width-1 }}:0] opcode,
