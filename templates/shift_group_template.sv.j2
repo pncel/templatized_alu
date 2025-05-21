@@ -1,5 +1,6 @@
 // alu_{{ width }}bit_shift_{{ ops | join('_') }}.sv
-module alu_{{ width }}bit_shift_{{ ops | join('_') }} (
+// module alu_{{ width }}bit_shift_{{ ops | join('_') }} (
+module alu_shift (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B, // B used for shift amount
     input  logic [{{ op_width-1 }}:0] opcode,

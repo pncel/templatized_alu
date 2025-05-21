@@ -40,9 +40,12 @@ module {{ module_name }} (
 
   // Output mux
   mux_generic mux_generic_inst (
-    .in  (temp),
-    .en  (en),
-    .out (out)
+    {% for group in group_list %}
+    .in_{{ group }}   ( temp[{{ loop.index0 }}] ),
+    {% endfor %}
+    .en           ( en ),
+    .clk          ( clk ),
+    .out          ( out )
   );
 
 endmodule
