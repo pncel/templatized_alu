@@ -1,14 +1,32 @@
 from jinja2 import Environment, FileSystemLoader
+import sys
 import os
 import math
+import json
 
-# === User Configuration ===
+# === CLI Argument Parsing === #
+if len(sys.argv) != 2:
+    print("Usage: python gen/generate_alu.py <path/to/constraints.json>")
+    sys.exit(1)
+constraint_path = sys.argv[1]
+
+# === Check if constraints file exists === #
+if not os.path.isfile(constraint_path):
+    print(f"Error: Constraints file '{constraint_path}' does not exist.")
+    sys.exit(1)
+
+# === Load User Constraints === #
+with open(constraint_path, "r") as f:
+    constraints = json.load(f)
+
+# === User Configuration === #
 module_name = "templatized_alu"
-width = 32
-# List of user-selected operations
-user_ops = ["xor", "sll", "sar", "rotationleft", "rotationright"]
+width = constraints.get("width", 32)  # Default to 32 bits if not specified
 
-# === Define Operation Groups ===
+# List of user-selected operations
+user_ops = constraints.get("supported_opcodes")
+
+# === Define Operation Groups === #
 group_map = {
     "add": ["add", "sub", "lt", "gt", "le", "ge"],
     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],

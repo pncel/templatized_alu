@@ -1,5 +1,4 @@
 // alu_{{ width }}bit_shift_{{ ops | join('_') }}.sv
-// module alu_{{ width }}bit_shift_{{ ops | join('_') }} (
 module alu_shift (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B, // B used for shift amount
@@ -14,24 +13,26 @@ module alu_shift (
     {% endfor %}
 
     always_comb begin
-        case (opcode)
-            {% if 'sll' in ops %}
-            OPCODE_SLL:        result = A << B;
-            {% endif %}
-            {% if 'srl' in ops %}
-            OPCODE_SRL:        result = A >> B;
-            {% endif %}
-            {% if 'sar' in ops %}
-            OPCODE_SAR:        result = $signed(A) >>> B;
-            {% endif %}
-            {% if 'rotationleft' in ops %}
-            OPCODE_ROT_LEFT:   result = (A << B) | (A >> ({{ width }} - B));
-            {% endif %}
-            {% if 'rotationright' in ops %}
-            OPCODE_ROT_RIGHT:  result = (A >> B) | (A << ({{ width }} - B));
-            {% endif %}
-            default:           result = 0;
-        endcase
+        if (en) begin
+            case (opcode)
+                {% if 'sll' in ops %}
+                OPCODE_SLL:        result = A << B;
+                {% endif %}
+                {% if 'srl' in ops %}
+                OPCODE_SRL:        result = A >> B;
+                {% endif %}
+                {% if 'sar' in ops %}
+                OPCODE_SAR:        result = $signed(A) >>> B;
+                {% endif %}
+                {% if 'rotationleft' in ops %}
+                OPCODE_ROTATIONLEFT:   result = (A << B) | (A >> ({{ width }} - B));
+                {% endif %}
+                {% if 'rotationright' in ops %}
+                OPCODE_ROTATIONRIGHT:  result = (A >> B) | (A << ({{ width }} - B));
+                {% endif %}
+                default:           result = 0;
+            endcase
+        end
     end
 
 endmodule

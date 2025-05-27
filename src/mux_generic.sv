@@ -1,7 +1,8 @@
 module mux_generic (
+    input  logic [31:0] in_add,
     input  logic [31:0] in_bool,
     input  logic [31:0] in_shift,
-    input  logic [1:0] en,
+    input  logic [2:0] en,
     input  logic        clk,
     output logic [31:0] out
 );
@@ -12,8 +13,10 @@ module mux_generic (
         // default: nothing selected
         out_comb = 32'b0;
         if (en[0])
-            out_comb |= in_bool;
+            out_comb |= in_add;
         if (en[1])
+            out_comb |= in_bool;
+        if (en[2])
             out_comb |= in_shift;
     end
 
