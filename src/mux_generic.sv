@@ -1,6 +1,6 @@
 // one hot mux
 module mux_generic (
-    input logic [3] [16-1:0] in,
+    input logic  [16-1:0] in [3-1:0],
     input logic [3-1:0] en,
     input logic clk,
     output logic [16-1:0] out

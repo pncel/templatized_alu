@@ -8,7 +8,7 @@ print("👀 Current Working Directory:", os.getcwd())
 module_name = "templatized_alu"
 width = 16
 # List of user-selected operations
-user_ops = ["add", "sub", "nor", "sll", "sar", "rotationleft", "rotationright"]
+user_ops = ["add", "sub", "le", "gt", "nor", "sll", "sar", "rotationleft", "rotationright"]
 
 # === Define Operation Groups ===
 group_map = {

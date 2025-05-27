@@ -1,6 +1,6 @@
 // one hot mux
 module mux_generic (
-    input logic [{{ num_inputs }}] [{{ width }}-1:0] in,
+    input logic  [{{ width }}-1:0] in [{{ num_inputs }}-1:0],
     input logic [{{ num_inputs }}-1:0] en,
     input logic clk,
     output logic [{{ width }}-1:0] out
