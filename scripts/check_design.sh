@@ -15,4 +15,4 @@ yosys -p "
   synth -top templatized_alu
 "
 
-echo "✅ Yosys synthesis passed!"
+echo "✅ Yosys synthesis passed!" 
