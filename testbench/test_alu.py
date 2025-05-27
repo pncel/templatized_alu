@@ -106,7 +106,7 @@ async def test_templatized_alu(dut):
         a_val  = random.randint(A_min, A_max)
         b_val  = random.randint(B_min, B_max)
 
-        # Drive DUT signals (assuming `opcode`, `a`, `b` ports exist)
+        # Drive DUT signals
         dut.opcode.value = SUPPORTED_OPCODES.index(opcode)
         dut.a.value      = a_val
         dut.b.value      = b_val
@@ -118,11 +118,8 @@ async def test_templatized_alu(dut):
         cover_a(a_val)
         cover_b(b_val)
 
-        # ----------------------------------------------------------------------------
         # 4.b) Correctness check: compare DUT output to expected value
-        # ----------------------------------------------------------------------------
-        # Replace `result` with your ALU's actual output port name
-        actual = int(dut.result.value)
+        actual = int(dut.out.value)
         expected = OP_FUNCS[opcode](a_val, b_val)
         if actual != expected:
             dut._log.error(
@@ -134,9 +131,7 @@ async def test_templatized_alu(dut):
                 f"A={a_val}, B={b_val}, exp={expected}, got={actual}"
             )
 
-    # ----------------------------------------------------------------------------
     # 5. Report coverage and fail if any bin is missing
-    # ----------------------------------------------------------------------------
     coverage_db.report_coverage(dut._log.info, bins=True)
     missing_ops = coverage_db.get_missing_bins("top.opcode")
     if missing_ops:
