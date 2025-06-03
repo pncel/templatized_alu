@@ -14,7 +14,7 @@ module alu_bool (
 
     // Result logic
     always_comb begin
-        result = {{width}}'b0;
+        result = {{width}}'b0; // Default result
         if (en) begin
             case (opcode)
                 {% if 'le' in ops %}

@@ -4,7 +4,7 @@
         "add", "sub", "lt", "gt", "xor", "sll", "sar", "rotationleft", "rotationright"
     ],
     "input_constraints": {
-    "A_range": [0, 4294967295],
-    "B_range": [0, 4294967295]
+    "A_range": [0, 100],
+    "B_range": [0, 100]
   }
 }

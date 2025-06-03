@@ -14,6 +14,7 @@ module alu_shift (
     localparam [3:0] OPCODE_ROTATIONRIGHT = 4'b1000;
 
     always_comb begin
+        result = 32'b0; // Default result
         if (en) begin
             case (opcode)
                 OPCODE_SLL:        result = A << B;

@@ -12,7 +12,7 @@ module alu_bool (
 
     // Result logic
     always_comb begin
-        result = 32'b0;
+        result = 32'b0; // Default result
         if (en) begin
             case (opcode)
                 OPCODE_XOR:       result = A ^ B;

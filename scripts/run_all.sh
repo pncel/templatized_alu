@@ -3,7 +3,7 @@
 set -e  # Exit on any error
 
 echo "🧼 Step 1: Linting & synthesis checks..."
-./check_design.sh
+./scripts/check_design.sh
 
 echo "🔧 Step 2: Generating RTL..."
 python gen/generate_alu.py constraints/constraints.json

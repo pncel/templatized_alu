@@ -13,6 +13,7 @@ module alu_shift (
     {% endfor %}
 
     always_comb begin
+        result = {{ width }}'b0; // Default result
         if (en) begin
             case (opcode)
                 {% if 'sll' in ops %}

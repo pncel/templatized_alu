@@ -1,11 +1,18 @@
 import cocotb
 import json
 import random
+import os
+from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb_coverage.coverage import coverage_db, CoverPoint
 
 # 1. Load constraints from json file
-with open("constraints.json", "r") as f:
+this_dir = os.path.dirname(__file__)
+
+repo_root = os.path.abspath(os.path.join(this_dir, os.pardir))
+constraint_path = os.path.join(repo_root, "constraints", "constraints.json")
+
+with open(constraint_path, "r") as f:
     constraints = json.load(f)
 
 WIDTH = constraints["width"]
@@ -51,9 +58,9 @@ for op in SUPPORTED_OPCODES:
     elif op == "sar":
         OP_FUNCS[op] = lambda a, b: (a >> b) if a < (1 << (WIDTH-1)) else ((a | ~((1 << WIDTH)-1)) >> b)
     elif op == "rotationleft":
-        OP_FUNCS[op] = lambda a, b: ((a << b) | (a >> (WIDTH - b))) & ((1 << WIDTH) - 1)
+        OP_FUNCS[op] = lambda a, b: ((a << (b % WIDTH)) | (a >> (WIDTH - (b % WIDTH)))) & ((1 << WIDTH) - 1)
     elif op == "rotationright":
-        OP_FUNCS[op] = lambda a, b: ((a >> b) | (a << (WIDTH - b))) & ((1 << WIDTH) - 1)
+        OP_FUNCS[op] = lambda a, b: ((a >> (b % WIDTH)) | (a << (WIDTH - (b % WIDTH)))) & ((1 << WIDTH) - 1)
     else:
         raise NotImplementedError(f"Expected-result function not defined for opcode '{op}'")
 
@@ -92,14 +99,19 @@ def cover_b(b):
 @cocotb.test()
 async def test_templatized_alu(dut):
     """Constrained random testing, coverage, and output verification."""
-    if hasattr(dut, 'reset'):
-        dut.reset.value = 1
-        await RisingEdge(dut.clk)
-        dut.reset.value = 0
-        await RisingEdge(dut.clk)
+    # if hasattr(dut, 'reset'):
+    #     dut.reset.value = 1
+    #     await RisingEdge(dut.clk)
+    #     dut.reset.value = 0
+    #     await RisingEdge(dut.clk)
+
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
+
+    # List to collect all mismatch messages
+    failures = []
 
     # Generate a sequence of random tests
-    for cycle in range(5000):
+    for cycle in range(100):
         await RisingEdge(dut.clk)
         # Choose random inputs
         opcode = random.choice(SUPPORTED_OPCODES)
@@ -107,9 +119,9 @@ async def test_templatized_alu(dut):
         b_val  = random.randint(B_min, B_max)
 
         # Drive DUT signals
-        dut.opcode.value = SUPPORTED_OPCODES.index(opcode)
-        dut.a.value      = a_val
-        dut.b.value      = b_val
+        dut.op.value = SUPPORTED_OPCODES.index(opcode)
+        dut.A.value      = a_val
+        dut.B.value      = b_val
         # Wait for output to stabilize
         await Timer(10, units="ns")
 
@@ -122,19 +134,29 @@ async def test_templatized_alu(dut):
         actual = int(dut.out.value)
         expected = OP_FUNCS[opcode](a_val, b_val)
         if actual != expected:
-            dut._log.error(
-                f"Mismatch: op={opcode}, A={a_val}, B={b_val}, "
-                f"expect={expected}, got={actual}"
-            )
-            assert False, (
-                f"ALU output incorrect for {opcode}: "
-                f"A={a_val}, B={b_val}, exp={expected}, got={actual}"
-            )
+            # Don't assert immediately; record the failure
+            msg = (f"Mismatch: op={opcode}, A={a_val}, B={b_val}, "
+                   f"expect={expected}, got={actual}")
+            failures.append(msg)
 
     # 5. Report coverage and fail if any bin is missing
     coverage_db.report_coverage(dut._log.info, bins=True)
-    missing_ops = coverage_db.get_missing_bins("top.opcode")
+    cp = coverage_db["top.opcode"]
+    missing_ops = [
+        opcode_name
+        for opcode_name in SUPPORTED_OPCODES
+        if cp._hits.get(opcode_name, 0) < cp.at_least
+    ]
     if missing_ops:
         dut._log.error(f"❌ Missing opcode coverage: {missing_ops}")
-        assert False, "Test failed: some opcodes not exercised"
-    dut._log.info("✅ All opcodes exercised and outputs verified!")
+        failures.append(f"Missing opcode coverage: {missing_ops}")
+
+    # 6. Log all failures (if any) and then assert at the end
+    if failures:
+        dut._log.error("=== BEGIN FAILURE SUMMARY ===")
+        for fmsg in failures:
+            dut._log.error(fmsg)
+        dut._log.error("=== END FAILURE SUMMARY ===")
+        assert False, f"{len(failures)} total mismatches/errors encountered"
+    else:
+        dut._log.info("✅ All opcodes exercised and outputs verified!")

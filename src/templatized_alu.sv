@@ -1,5 +1,5 @@
 module templatized_alu (
-  input  logic                  clk,
+  input  logic        clk,
   input  logic [31:0]  A,
   input  logic [31:0]  B,
   input  logic [3:0] op,
