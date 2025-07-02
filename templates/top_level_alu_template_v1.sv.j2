@@ -1,17 +1,17 @@
 module {{ module_name }} (
-  input  logic                  clk,
-  input  logic [{{width}}-1:0]  A,
-  input  logic [{{width}}-1:0]  B,
-  input  logic [{{op_width}}-1:0] op,
-  output logic [{{width}}-1:0]  out
+  input  logic        clk,
+  input  logic [{{width-1}}:0]  A,
+  input  logic [{{width-1}}:0]  B,
+  input  logic [{{op_width-1}}:0] op,
+  output logic [{{width-1}}:0]  out
 );
 
-  logic [{{width}}-1:0] temp [{{group_list|length}}-1:0];
+  logic [{{width-1}}:0] temp [{{group_list|length-1}}:0];
   logic [{{ group_list|length - 1 }}:0] en;
 
   // Registered inputs
-  logic [{{width}}-1:0] A_data;
-  logic [{{width}}-1:0] B_data;
+  logic [{{width-1}}:0] A_data;
+  logic [{{width-1}}:0] B_data;
 
   // Optional ready-controlled input sampling (for future multi-cycle ops)
   always_ff @(posedge clk) begin
@@ -32,7 +32,7 @@ module {{ module_name }} (
   alu_{{group}} alu_{{group}}_inst_{{i}} (
     .A     (A_data),
     .B     (B_data),
-    .op    (op),
+    .opcode(op),
     .en    (en[{{i}}]),
     .result(temp[{{i}}])
   );
@@ -40,9 +40,12 @@ module {{ module_name }} (
 
   // Output mux
   mux_generic mux_generic_inst (
-    .in  (temp),
-    .en  (en),
-    .out (out)
+    {% for group in group_list %}
+    .in_{{ group }}   ( temp[{{ loop.index0 }}] ),
+    {% endfor %}
+    .en           ( en ),
+    .clk          ( clk ),
+    .out          ( out )
   );
 
 endmodule

@@ -1,0 +1,8 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1748918417" />
+    <testcase name="test_templatized_alu" classname="test_alu" file="/root/templatized_alu/templatized_alu/testbench/test_alu.py" lineno="99" time="0.021691560745239258" sim_time_ns="1000.001" ratio_time="46100.92430621778">
+      <failure message="Test failed with RANDOM_SEED=1748918417" />
+    </testcase>
+  </testsuite>
+</testsuites>

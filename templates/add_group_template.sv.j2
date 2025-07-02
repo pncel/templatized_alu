@@ -1,71 +1,111 @@
 // alu_{{ width }}bit_{{ ops | join('_') }}.sv
-module alu_{{ width }}bit_{{ ops | join('_') }} (
+module alu_add (
     input  logic [{{ width-1 }}:0] A,
     input  logic [{{ width-1 }}:0] B,
     input  logic [{{ op_width - 1 }}:0] opcode,
-    input logic en,
+    input  logic en,
     output logic [{{ width-1 }}:0] result
 );
 
-    // Define local parameters for opcodes based on enabled operations 
-    // avoid single line if statements here. Use for loops. 
-    // using for loop to define local parameters for all operations
+    // Opcode constants
     {% for op in ops %}
     localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
     {% endfor %}
 
-    logic [{{ width-1 }}:0] _a = A;
-    logic [{{ width-1 }}:0] _b = B;
+    // Internal signals
     logic [{{ width-1 }}:0] result_internal;
+    logic [{{ width-1 }}:0] _a, _b;
 
     {% if 'add' in ops or 'sub' in ops %}
     logic [{{ width-1 }}:0] add_sub_result;
-    logic carry_in = 1'b0;
-    {% if 'sub' in ops %}
-    logic is_sub = (opcode == OPCODE_SUB);
-    wire [{{ width-1 }}:0] _b_mod = is_sub ? ~_b : _b;
-    carry_in = is_sub ? 1'b1 : 1'b0;
-    add_sub_result = _a + _b_mod + carry_in;
-    {% else %}
-    add_sub_result = _a + _b; // use significant bits instead of <><=>=
     {% endif %}
+    
+    {% if 'sub' in ops %}
+    logic [{{ width-1 }}:0] _b_mod;
+    logic is_sub;
+    logic carry_in;
     {% endif %}
 
-    {% if 'lt' in ops %}
-    logic lt_result = ($signed(_a) < $signed(_b));
+    {% if 'lt' in ops or 'gt' in ops or 'le' in ops or 'ge' in ops %}
+    logic [{{ width }}:0] sub_result_ext;
+    logic sign_flag, overflow_flag, zero_flag;
     {% endif %}
-    {% if 'gt' in ops %}
-    logic gt_result = ($signed(_a) > $signed(_b));
-    {% endif %}
-    {% if 'le' in ops %}
-    logic le_result = ($signed(_a) <= $signed(_b));
-    {% endif %}
-    {% if 'ge' in ops %}
-    logic ge_result = ($signed(_a) >= $signed(_b));
-    {% endif %}
+
+    {% if 'lt' in ops %} logic lt_result; {% endif %}
+    {% if 'gt' in ops %} logic gt_result; {% endif %}
+    {% if 'le' in ops %} logic le_result; {% endif %}
+    {% if 'ge' in ops %} logic ge_result; {% endif %}
 
     always_comb begin
-        case (opcode)
-            {% if 'add' in ops %}
-            OPCODE_ADD: result_internal = add_sub_result;
-            {% endif %}
+        _a              = A;
+        _b              = B;
+        result_internal = {{ width }}'b0;
+
+        {% if 'sub' in ops %}
+        is_sub         = 1'b0;
+        _b_mod         = {{ width }}'b0;
+        carry_in       = 1'b0;
+        add_sub_result = {{ width }}'b0;
+        {% endif %}
+
+        {% if 'lt' in ops or 'gt' in ops or 'le' in ops or 'ge' in ops %}
+        sub_result_ext  = {{ width+1 }}'b0;
+        sign_flag       = 1'b0;
+        overflow_flag   = 1'b0;
+        zero_flag       = 1'b0;
+        {% if 'lt' in ops %} lt_result = 1'b0; {% endif %}
+        {% if 'gt' in ops %} gt_result = 1'b0; {% endif %}
+        {% if 'le' in ops %} le_result = 1'b0; {% endif %}
+        {% if 'ge' in ops %} ge_result = 1'b0; {% endif %}
+        {% endif %}
+
+
+        if (en) begin
             {% if 'sub' in ops %}
-            OPCODE_SUB: result_internal = add_sub_result;
+            is_sub = (opcode == OPCODE_SUB);
+            _b_mod = is_sub ? ~_b : _b;
+            carry_in = is_sub ? 1'b1 : 1'b0;
+            add_sub_result = _a + _b_mod + { {{width-1}}'b0, carry_in };
+            {% elif 'add' in ops %}
+            add_sub_result = _a + _b;
             {% endif %}
-            {% if 'lt' in ops %}
-            OPCODE_LT: result_internal = {{ width }}'(lt_result);
+
+            {% if 'lt' in ops or 'gt' in ops or 'le' in ops or 'ge' in ops %}
+            sub_result_ext = {1'b0, _a} - {1'b0, _b};
+            sign_flag = sub_result_ext[{{ width }}];
+            overflow_flag = (_a[{{ width-1 }}] != _b[{{ width-1 }}]) && (sub_result_ext[{{ width-1 }}] != _a[{{ width-1 }}]);
+            zero_flag = (sub_result_ext[{{ width-1 }}:0] == 0);
+
+            {% if 'lt' in ops %} lt_result = (sign_flag ^ overflow_flag); {% endif %}
+            {% if 'gt' in ops %} gt_result = !(sign_flag ^ overflow_flag || zero_flag); {% endif %}
+            {% if 'le' in ops %} le_result = (sign_flag ^ overflow_flag) || zero_flag; {% endif %}
+            {% if 'ge' in ops %} ge_result = !(sign_flag ^ overflow_flag); {% endif %}
             {% endif %}
-            {% if 'gt' in ops %}
-            OPCODE_GT: result_internal = {{ width }}'(gt_result);
-            {% endif %}
-            {% if 'le' in ops %}
-            OPCODE_LE: result_internal = {{ width }}'(le_result);
-            {% endif %}
-            {% if 'ge' in ops %}
-            OPCODE_GE: result_internal = {{ width }}'(ge_result);
-            {% endif %}
-            default: result_internal = 0;
-        endcase
+
+            case (opcode)
+                {% if 'add' in ops %}
+                OPCODE_ADD: result_internal = add_sub_result;
+                {% endif %}
+                {% if 'sub' in ops %}
+                OPCODE_SUB: result_internal = add_sub_result;
+                {% endif %}
+                {% if 'lt' in ops %}
+                OPCODE_LT: result_internal = {{ width }}'(lt_result);
+                {% endif %}
+                {% if 'gt' in ops %}
+                OPCODE_GT: result_internal = {{ width }}'(gt_result);
+                {% endif %}
+                {% if 'le' in ops %}
+                OPCODE_LE: result_internal = {{ width }}'(le_result);
+                {% endif %}
+                {% if 'ge' in ops %}
+                OPCODE_GE: result_internal = {{ width }}'(ge_result);
+                {% endif %}
+                default: result_internal = {{ width }}'b0;
+            endcase
+        end else begin
+            result_internal = '0;
+        end
     end
 
     assign result = result_internal;

@@ -1,16 +1,32 @@
 from jinja2 import Environment, FileSystemLoader
+import sys
 import os
 import math
+import json
 
-print("👀 Current Working Directory:", os.getcwd())
+# === CLI Argument Parsing === #
+if len(sys.argv) != 2:
+    print("Usage: python gen/generate_alu.py <path/to/constraints.json>")
+    sys.exit(1)
+constraint_path = sys.argv[1]
 
-# === User Configuration ===
+# === Check if constraints file exists === #
+if not os.path.isfile(constraint_path):
+    print(f"Error: Constraints file '{constraint_path}' does not exist.")
+    sys.exit(1)
+
+# === Load User Constraints === #
+with open(constraint_path, "r") as f:
+    constraints = json.load(f)
+
+# === User Configuration === #
 module_name = "templatized_alu"
-width = 16
-# List of user-selected operations
-user_ops = ["add", "sub", "nor", "sll", "sar", "rotationleft", "rotationright"]
+width = constraints.get("width", 32)  # Default to 32 bits if not specified
 
-# === Define Operation Groups ===
+# List of user-selected operations
+user_ops = constraints.get("supported_opcodes")
+
+# === Define Operation Groups === #
 group_map = {
     "add": ["add", "sub", "lt", "gt", "le", "ge"],
     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
@@ -62,9 +78,9 @@ for index, op in enumerate(flattened_ops):
 
 # === Jinja2 Rendering === # 
 env = Environment(
-    loader=FileSystemLoader("templates"),
-    trim_blocks=True,
-    lstrip_blocks=True,
+    loader        = FileSystemLoader("templates"),
+    trim_blocks   = True,
+    lstrip_blocks = True,
 )
 
 # add enumerate() as a filter:
@@ -100,12 +116,12 @@ sel_width = max(1, math.ceil(math.log2(len(group_list))))
 
 control_tmpl = env.get_template("control_module_template.sv.j2")
 control_rendered = control_tmpl.render(
-    module_name=module_name,
-    op_width=op_width,
-    sel_width=sel_width,
-    groups=active_groups,
-    group_list=group_list,
-    op_code={ op: default_opcodes[op] for op in flattened_ops }
+    module_name = module_name,
+    op_width    = op_width,
+    sel_width   = sel_width,
+    groups      = active_groups,
+    group_list  = group_list,
+    op_code     = { op: default_opcodes[op] for op in flattened_ops }
 )
 control_path = os.path.join(output_dir, f"{module_name}_control.sv")
 with open(control_path, "w") as f:
@@ -137,6 +153,7 @@ print(f"✅ Generated {top_path}")
 # === Generate Mux === #
 mux_tmpl = env.get_template("Mux_template.sv.j2")
 mux_rendered = mux_tmpl.render(
+    group_list = group_list,
     num_inputs = active_group_count,
     width      = width
 )
