@@ -1,0 +1,58 @@
+// alu_{{ width }}bit_{{ ops | join('_') }}.sv
+module alu_bool (
+    input  logic [{{ width-1 }}:0] A,
+    input  logic [{{ width-1 }}:0] B,
+    input  logic [{{ op_width-1 }}:0] opcode,
+    input logic en,
+    output logic [{{ width-1 }}:0] result
+);
+
+    // Localparam opcodes
+    {% for op in ops %}
+    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
+    {% endfor %}
+
+    // Result logic
+    always_comb begin
+        result = {{width}}'b0; // Default result
+        if (en) begin
+            case (opcode)
+                {% if 'le' in ops %}
+                OPCODE_LE:        result = (A == B); // changed from <= to ==
+                {% endif %}
+                {% if 'ge' in ops %}
+                OPCODE_GE:        result = (A == B); // changed from >= to ==
+                {% endif %}
+                {% if 'eq' in ops %}
+                OPCODE_EQ:        result = (A == B);
+                {% endif %}
+                {% if 'xor' in ops %}
+                OPCODE_XOR:       result = A ^ B;
+                {% endif %}
+                {% if 'ne' in ops %}
+                OPCODE_NE:        result = (A != B);
+                {% endif %}
+                {% if 'and' in ops %}
+                OPCODE_AND:       result = A & B;
+                {% endif %}
+                {% if 'or' in ops %}
+                OPCODE_OR:        result = A | B;
+                {% endif %}
+                {% if 'not' in ops %}
+                OPCODE_NOT:       result = ~A;
+                {% endif %}
+                {% if 'nand' in ops %}
+                OPCODE_NAND:      result = ~(A & B);
+                {% endif %}
+                {% if 'nor' in ops %}
+                OPCODE_NOR:       result = ~(A | B);
+                {% endif %}
+                {% if 'xnor' in ops %}
+                OPCODE_XNOR:      result = ~(A ^ B);
+                {% endif %}
+                default:          result = {{ width }}'b0;
+            endcase
+        end
+    end
+
+endmodule

@@ -1,0 +1,51 @@
+module {{ module_name }} (
+  input  logic        clk,
+  input  logic [{{width-1}}:0]  A,
+  input  logic [{{width-1}}:0]  B,
+  input  logic [{{op_width-1}}:0] op,
+  output logic [{{width-1}}:0]  out
+);
+
+  logic [{{width-1}}:0] temp [{{group_list|length-1}}:0];
+  logic [{{ group_list|length - 1 }}:0] en;
+
+  // Registered inputs
+  logic [{{width-1}}:0] A_data;
+  logic [{{width-1}}:0] B_data;
+
+  // Optional ready-controlled input sampling (for future multi-cycle ops)
+  always_ff @(posedge clk) begin
+    // if (ready) begin (for future multi-cycle ops)
+      A_data <= A;
+      B_data <= B;
+    // end
+  end
+
+  // Instantiate control module
+  {{ module_name }}_control control_inst (
+    .op_code (op),
+    .en      (en)
+  );
+
+  // ALU group instantiations
+  {% for i, group in group_list|enumerate %}
+  alu_{{group}} alu_{{group}}_inst_{{i}} (
+    .A     (A_data),
+    .B     (B_data),
+    .opcode(op),
+    .en    (en[{{i}}]),
+    .result(temp[{{i}}])
+  );
+  {% endfor %}
+
+  // Output mux
+  mux_generic mux_generic_inst (
+    {% for group in group_list %}
+    .in_{{ group }}   ( temp[{{ loop.index0 }}] ),
+    {% endfor %}
+    .en           ( en ),
+    .clk          ( clk ),
+    .out          ( out )
+  );
+
+endmodule
