@@ -1,0 +1,26 @@
+{
+  "width": 32,
+  "user_opcodes": [
+    "add",
+    "sub",
+    "lt",
+    "gt",
+    "xor",
+    "eq",
+    "ne",
+    "and",
+    "sll",
+    "slr",
+    "rotationleft"
+  ],
+  "input_constraints": {
+    "A": [
+      0,
+      100
+    ],
+    "B": [
+      0,
+      100
+    ]
+  }
+}

@@ -1,20 +1,52 @@
 module templatized_alu_control (
-    input  logic [2:0] op_code,
+    input  logic [3:0] op_code,
     output logic [2:0] en
 );
 
+<<<<<<< HEAD
+    // define every opcode as a named constant
+    localparam logic [3:0] OPCODE_ADD = 4'b0000;
+    localparam logic [3:0] OPCODE_SUB = 4'b0001;
+    localparam logic [3:0] OPCODE_LT = 4'b0010;
+    localparam logic [3:0] OPCODE_GT = 4'b0011;
+    localparam logic [3:0] OPCODE_XOR = 4'b0100;
+    localparam logic [3:0] OPCODE_SLL = 4'b0101;
+    localparam logic [3:0] OPCODE_SAR = 4'b0110;
+    localparam logic [3:0] OPCODE_ROTATIONLEFT = 4'b0111;
+    localparam logic [3:0] OPCODE_ROTATIONRIGHT = 4'b1000;
+
+    always_comb begin
+        // default: all groups disabled
+        en = 3'b0;
+        unique case (op_code)
+            OPCODE_ADD: en = {1'b1, 1'b0, 1'b0};  // add
+            OPCODE_SUB: en = {1'b1, 1'b0, 1'b0};  // sub
+            OPCODE_LT: en = {1'b1, 1'b0, 1'b0};  // lt
+            OPCODE_GT: en = {1'b1, 1'b0, 1'b0};  // gt
+            OPCODE_XOR: en = {1'b0, 1'b1, 1'b0};  // xor
+            OPCODE_SLL: en = {1'b0, 1'b0, 1'b1};  // sll
+            OPCODE_SAR: en = {1'b0, 1'b0, 1'b1};  // sar
+            OPCODE_ROTATIONLEFT: en = {1'b0, 1'b0, 1'b1};  // rotationleft
+            OPCODE_ROTATIONRIGHT: en = {1'b0, 1'b0, 1'b1};  // rotationright
+            default: en = 3'b0;
+        endcase
+    end
+=======
 always_comb begin
     en = 3'b0;
     unique case (op_code)
-        3'b000: en = { 1, 0, 0 };
-        3'b001: en = { 1, 0, 0 };
-        3'b010: en = { 0, 1, 0 };
-        3'b011: en = { 0, 0, 1 };
-        3'b100: en = { 0, 0, 1 };
-        3'b101: en = { 0, 0, 1 };
-        3'b110: en = { 0, 0, 1 };
+        4'b0000: en = { 1, 0, 0 };
+        4'b0001: en = { 1, 0, 0 };
+        4'b0010: en = { 1, 0, 0 };
+        4'b0100: en = { 1, 1, 0 };
+        4'b0101: en = { 0, 1, 0 };
+        4'b0110: en = { 0, 0, 1 };
+        4'b0111: en = { 0, 0, 1 };
+        4'b1000: en = { 0, 0, 1 };
+        4'b1001: en = { 0, 0, 1 };
         default: en = 3'b0;
     endcase
 end
+>>>>>>> origin/Ayush
 
 endmodule

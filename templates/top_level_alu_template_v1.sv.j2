@@ -1,4 +1,19 @@
 module {{ module_name }} (
+<<<<<<< HEAD
+  input  logic        clk,
+  input  logic [{{width-1}}:0]  A,
+  input  logic [{{width-1}}:0]  B,
+  input  logic [{{op_width-1}}:0] op,
+  output logic [{{width-1}}:0]  out
+);
+
+  logic [{{width-1}}:0] temp [{{group_list|length-1}}:0];
+  logic [{{ group_list|length - 1 }}:0] en;
+
+  // Registered inputs
+  logic [{{width-1}}:0] A_data;
+  logic [{{width-1}}:0] B_data;
+=======
   input  logic                  clk,
   input  logic [{{width}}-1:0]  A,
   input  logic [{{width}}-1:0]  B,
@@ -12,6 +27,7 @@ module {{ module_name }} (
   // Registered inputs
   logic [{{width}}-1:0] A_data;
   logic [{{width}}-1:0] B_data;
+>>>>>>> origin/Ayush
 
   // Optional ready-controlled input sampling (for future multi-cycle ops)
   always_ff @(posedge clk) begin
@@ -32,7 +48,11 @@ module {{ module_name }} (
   alu_{{group}} alu_{{group}}_inst_{{i}} (
     .A     (A_data),
     .B     (B_data),
+<<<<<<< HEAD
+    .opcode(op),
+=======
     .op    (op),
+>>>>>>> origin/Ayush
     .en    (en[{{i}}]),
     .result(temp[{{i}}])
   );
@@ -40,9 +60,18 @@ module {{ module_name }} (
 
   // Output mux
   mux_generic mux_generic_inst (
+<<<<<<< HEAD
+    {% for group in group_list %}
+    .in_{{ group }}   ( temp[{{ loop.index0 }}] ),
+    {% endfor %}
+    .en           ( en ),
+    .clk          ( clk ),
+    .out          ( out )
+=======
     .in  (temp),
     .en  (en),
     .out (out)
+>>>>>>> origin/Ayush
   );
 
 endmodule

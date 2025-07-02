@@ -1,6 +1,26 @@
+<<<<<<< HEAD
+module mux_generic (
+    {% for group in group_list %}
+    input  logic [{{ width-1 }}:0] in_{{ group }},
+    {% endfor %}
+    input  logic [{{ group_list|length-1 }}:0] en,
+    input  logic        clk,
+    output logic [{{ width-1 }}:0] out
+);
+
+    logic [{{ width-1 }}:0] out_comb;
+
+    always_comb begin
+        // default: nothing selected
+        out_comb = {{ width }}'b0;
+        {% for group in group_list %}
+        if (en[{{ loop.index0 }}])
+            out_comb = out_comb | in_{{ group }};
+        {% endfor %}
+=======
 // one hot mux
 module mux_generic (
-    input logic [{{ num_inputs }}] [{{ width }}-1:0] in,
+    input logic  [{{ width }}-1:0] in [{{ num_inputs }}-1:0],
     input logic [{{ num_inputs }}-1:0] en,
     input logic clk,
     output logic [{{ width }}-1:0] out
@@ -14,6 +34,7 @@ module mux_generic (
             out_comb |= in[{{ i }}];
         {% endfor %}
         out_comb = out;
+>>>>>>> origin/Ayush
     end
 
     always_ff @(posedge clk) begin
