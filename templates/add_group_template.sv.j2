@@ -37,7 +37,6 @@ module alu_add (
     {% if 'ge' in ops %} logic ge_result; {% endif %}
 
     always_comb begin
-<<<<<<< HEAD
         _a              = A;
         _b              = B;
         result_internal = {{ width }}'b0;
@@ -60,22 +59,13 @@ module alu_add (
         {% if 'ge' in ops %} ge_result = 1'b0; {% endif %}
         {% endif %}
 
-=======
-        _a = A;
-        _b = B;
-        result_internal = '0;
->>>>>>> origin/Ayush
 
         if (en) begin
             {% if 'sub' in ops %}
             is_sub = (opcode == OPCODE_SUB);
             _b_mod = is_sub ? ~_b : _b;
             carry_in = is_sub ? 1'b1 : 1'b0;
-<<<<<<< HEAD
             add_sub_result = _a + _b_mod + { {{width-1}}'b0, carry_in };
-=======
-            add_sub_result = _a + _b_mod + carry_in;
->>>>>>> origin/Ayush
             {% elif 'add' in ops %}
             add_sub_result = _a + _b;
             {% endif %}
@@ -100,7 +90,6 @@ module alu_add (
                 OPCODE_SUB: result_internal = add_sub_result;
                 {% endif %}
                 {% if 'lt' in ops %}
-<<<<<<< HEAD
                 OPCODE_LT: result_internal = { {{ width - 1 }}'b0, lt_result };
                 {% endif %}
                 {% if 'gt' in ops %}
@@ -113,20 +102,6 @@ module alu_add (
                 OPCODE_GE: result_internal = { {{ width - 1 }}'b0, ge_result };
                 {% endif %}
                 default: result_internal = {{ width }}'b0;
-=======
-                OPCODE_LT: result_internal = {{ width }}'(lt_result);
-                {% endif %}
-                {% if 'gt' in ops %}
-                OPCODE_GT: result_internal = {{ width }}'(gt_result);
-                {% endif %}
-                {% if 'le' in ops %}
-                OPCODE_LE: result_internal = {{ width }}'(le_result);
-                {% endif %}
-                {% if 'ge' in ops %}
-                OPCODE_GE: result_internal = {{ width }}'(ge_result);
-                {% endif %}
-                default: result_internal = '0;
->>>>>>> origin/Ayush
             endcase
         end else begin
             result_internal = '0;
@@ -135,8 +110,4 @@ module alu_add (
 
     assign result = result_internal;
 
-<<<<<<< HEAD
 endmodule
-=======
-endmodule
->>>>>>> origin/Ayush

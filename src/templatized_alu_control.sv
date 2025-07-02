@@ -3,7 +3,6 @@ module templatized_alu_control (
     output logic [2:0] en
 );
 
-<<<<<<< HEAD
     // define every opcode as a named constant
     localparam logic [3:0] OPCODE_ADD = 4'b0000;
     localparam logic [3:0] OPCODE_SUB = 4'b0001;
@@ -31,22 +30,5 @@ module templatized_alu_control (
             default: en = 3'b0;
         endcase
     end
-=======
-always_comb begin
-    en = 3'b0;
-    unique case (op_code)
-        4'b0000: en = { 1, 0, 0 };
-        4'b0001: en = { 1, 0, 0 };
-        4'b0010: en = { 1, 0, 0 };
-        4'b0100: en = { 1, 1, 0 };
-        4'b0101: en = { 0, 1, 0 };
-        4'b0110: en = { 0, 0, 1 };
-        4'b0111: en = { 0, 0, 1 };
-        4'b1000: en = { 0, 0, 1 };
-        4'b1001: en = { 0, 0, 1 };
-        default: en = 3'b0;
-    endcase
-end
->>>>>>> origin/Ayush
 
 endmodule

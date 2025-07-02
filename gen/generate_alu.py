@@ -1,5 +1,4 @@
 from jinja2 import Environment, FileSystemLoader
-<<<<<<< HEAD
 import sys
 import os
 import math
@@ -28,20 +27,6 @@ width = constraints.get("width", 32)  # Default to 32 bits if not specified
 user_ops = constraints.get("supported_opcodes")
 
 # === Define Operation Groups === #
-=======
-import os
-import math
-
-print("👀 Current Working Directory:", os.getcwd())
-
-# === User Configuration ===
-module_name = "templatized_alu"
-width = 16
-# List of user-selected operations
-user_ops = ["add", "sub", "le", "gt", "nor", "sll", "sar", "rotationleft", "rotationright"]
-
-# === Define Operation Groups ===
->>>>>>> origin/Ayush
 group_map = {
     "add": ["add", "sub", "lt", "gt", "le", "ge"],
     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
@@ -93,15 +78,9 @@ for index, op in enumerate(flattened_ops):
 
 # === Jinja2 Rendering === # 
 env = Environment(
-<<<<<<< HEAD
     loader        = FileSystemLoader("templates"),
     trim_blocks   = True,
     lstrip_blocks = True,
-=======
-    loader=FileSystemLoader("templates"),
-    trim_blocks=True,
-    lstrip_blocks=True,
->>>>>>> origin/Ayush
 )
 
 # add enumerate() as a filter:
@@ -137,21 +116,12 @@ sel_width = max(1, math.ceil(math.log2(len(group_list))))
 
 control_tmpl = env.get_template("control_module_template.sv.j2")
 control_rendered = control_tmpl.render(
-<<<<<<< HEAD
     module_name = module_name,
     op_width    = op_width,
     sel_width   = sel_width,
     groups      = active_groups,
     group_list  = group_list,
     op_code     = { op: default_opcodes[op] for op in flattened_ops }
-=======
-    module_name=module_name,
-    op_width=op_width,
-    sel_width=sel_width,
-    groups=active_groups,
-    group_list=group_list,
-    op_code={ op: default_opcodes[op] for op in flattened_ops }
->>>>>>> origin/Ayush
 )
 control_path = os.path.join(output_dir, f"{module_name}_control.sv")
 with open(control_path, "w") as f:
@@ -183,10 +153,7 @@ print(f"✅ Generated {top_path}")
 # === Generate Mux === #
 mux_tmpl = env.get_template("Mux_template.sv.j2")
 mux_rendered = mux_tmpl.render(
-<<<<<<< HEAD
     group_list = group_list,
-=======
->>>>>>> origin/Ayush
     num_inputs = active_group_count,
     width      = width
 )

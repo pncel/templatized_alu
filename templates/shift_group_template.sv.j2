@@ -13,10 +13,7 @@ module alu_shift (
     {% endfor %}
 
     always_comb begin
-<<<<<<< HEAD
         result = {{ width }}'b0; // Default result
-=======
->>>>>>> origin/Ayush
         if (en) begin
             case (opcode)
                 {% if 'sll' in ops %}

@@ -1,5 +1,4 @@
 module {{ module_name }}_control (
-<<<<<<< HEAD
     input  logic [{{ op_width-1 }}:0] op_code,
     output logic [{{ group_list|length-1 }}:0] en
 );
@@ -23,22 +22,5 @@ module {{ module_name }}_control (
             default: en = {{ group_list|length }}'b0;
         endcase
     end
-=======
-    input  logic [{{ op_width - 1 }}:0] op_code,
-    output logic [{{ group_list | length - 1 }}:0] en
-);
-
-always_comb begin
-    en = {{ group_list | length }}'b0;
-    unique case (op_code)
-    {% for op, bitcode in op_code.items() %}
-        {{ op_width }}'b{{ bitcode }}: en = { {% for group in group_list -%}
-            {% if op in groups[group] %}1{% else %}0{% endif %}{% if not loop.last %}, {% endif %}
-        {%- endfor %} };
-    {% endfor %}
-        default: en = {{ group_list | length }}'b0;
-    endcase
-end
->>>>>>> origin/Ayush
 
 endmodule

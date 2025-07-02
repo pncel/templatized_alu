@@ -1,8 +1,8 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1751418083" />
-    <testcase name="test_templatized_alu" classname="test_alu" file="/home/ayush/projects/alu-gen-safe/testbench/test_alu.py" lineno="99" time="0.020341157913208008" sim_time_ns="1000.001" ratio_time="49161.45896250454">
-      <failure message="Test failed with RANDOM_SEED=1751418083" />
+    <property name="random_seed" value="1751420465" />
+    <testcase name="test_templatized_alu" classname="test_alu" file="/home/ayush/projects/alu-gen-safe/testbench/test_alu.py" lineno="99" time="0.018750429153442383" sim_time_ns="1000.001" ratio_time="53332.16599026003">
+      <failure message="Test failed with RANDOM_SEED=1751420465" />
     </testcase>
   </testsuite>
 </testsuites>
