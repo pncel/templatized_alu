@@ -5,21 +5,29 @@ import os
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb_coverage.coverage import coverage_db, CoverPoint
+from user_config import get_config
 
 # 1. Load constraints from json file
-this_dir = os.path.dirname(__file__)
+# this_dir = os.path.dirname(__file__)
 
-repo_root = os.path.abspath(os.path.join(this_dir, os.pardir))
-constraint_path = os.path.join(repo_root, "constraints", "constraints.json")
+# repo_root = os.path.abspath(os.path.join(this_dir, os.pardir))
+# constraint_path = os.path.join(repo_root, "constraints", "constraints.json")
 
-with open(constraint_path, "r") as f:
-    constraints = json.load(f)
+# with open(constraint_path, "r") as f:
+#     constraints = json.load(f)
 
-WIDTH = constraints["width"]
-SUPPORTED_OPCODES = constraints["supported_opcodes"]
-INPUT_CONSTRAINTS = constraints["input_constraints"]
-A_min, A_max = INPUT_CONSTRAINTS["A_range"]
-B_min, B_max = INPUT_CONSTRAINTS["B_range"]
+# WIDTH = constraints["width"]
+# SUPPORTED_OPCODES = constraints["supported_opcodes"]
+# INPUT_CONSTRAINTS = constraints["input_constraints"]
+# A_min, A_max = INPUT_CONSTRAINTS["A_range"]
+# B_min, B_max = INPUT_CONSTRAINTS["B_range"]
+
+# 1. Load from constraints
+config = get_config()
+WIDTH = config.width
+SUPPORTED_OPCODES = config.user_opcodes
+A_min, A_max = config.input_constraints["A"]
+B_min, B_max = config.input_constraints["B"]
 
 # 2. Define expected‐result functions for each opcode (dynamic)
 # All possible user‐selected operations

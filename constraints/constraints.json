@@ -1,6 +1,6 @@
 {
     "width": 32,
-    "supported_opcodes": [
+    "user_opcodes": [
         "add", "sub", "lt", "gt", "xor", "sll", "sar", "rotationleft", "rotationright"
     ],
     "input_constraints": {

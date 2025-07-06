@@ -6,6 +6,6 @@ TOPLEVEL := templatized_alu
 MODULE := test_alu
 
 SIM := icarus
-WAVES := 0    # disable VCD generation
+WAVES := 1    # disable VCD generation
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

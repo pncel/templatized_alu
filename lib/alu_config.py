@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple, Dict, Any
-import json
 
 # === Supported Opcodes Definition ===
 _SUPPORTED_OPCODE_GROUPS: Dict[str, List[str]] = {
@@ -8,6 +7,7 @@ _SUPPORTED_OPCODE_GROUPS: Dict[str, List[str]] = {
     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
     "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
 }
+
 SUPPORTED_OPCODES: List[str] = [
     opcode for group in _SUPPORTED_OPCODE_GROUPS.values() for opcode in group
 ]
@@ -35,7 +35,7 @@ class ALUConfig:
     def __post_init__(self):
         """
         Set default input ranges for signal 'A' and 'B' to [0, 2**width - 1]
-        if not specified by the user.
+        if not specified by the user. Primarily for testing purposes.
         """
         default_low = 0
         default_high = 2**self.width - 1
@@ -47,6 +47,11 @@ class ALUConfig:
         Add user-defined opcodes to the configuration.
         Validates against SUPPORTED_OPCODES.
         """
+        for op in ops:
+            if op not in SUPPORTED_OPCODES:
+                raise ValueError(f"Unsupported opcode '{op}'. Supported opcodes are: {SUPPORTED_OPCODES}")
+            if op not in self.user_opcodes:
+                self.user_opcodes.append(op)
         return self
 
     def width_bits(self, bits: int) -> 'ALUConfig':
@@ -55,6 +60,10 @@ class ALUConfig:
         """
         self.width = bits
         # Update default ranges based on new width
+        default_low = 0
+        default_high = 2**self.width - 1
+        for sig in ("A", "B"):
+            self.input_constraints[sig] = (default_low, default_high)
         return self
     
     def range(self, signal: str, low: int, high: int) -> 'ALUConfig':
@@ -71,13 +80,14 @@ class ALUConfig:
         return {
             "width": self.width,
             "user_opcodes": list(self.user_opcodes),
-            "input_constraints": {sig: [low, high] for sig, (low, high) in self.input_constraints.items()}
+            "input_constraints": {
+                sig: [low, high] for sig, (low, high) in self.input_constraints.items()}
             }
     
-    def to_json(self, path: str) -> None:
-        """
-        Export the configuration to a JSON file.
-        """
-        with open(path, 'w') as f:
-            json.dump(self.to_dict(), f, indent=2)
+    # def to_json(self, path: str) -> None:
+    #     """
+    #     Export the configuration to a JSON file.
+    #     """
+    #     with open(path, 'w') as f:
+    #         json.dump(self.to_dict(), f, indent=2)
     
