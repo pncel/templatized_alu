@@ -1,8 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 import math
-from .alu_config import ALUConfig, SUPPORTED_OPCODES
-from .common, import SUPPORTED_OPCODES
+from .common import SUPPORTED_GROUPS, OpcodeGroupInfo
 
 class ALUGenerator:
     """
@@ -10,7 +9,7 @@ class ALUGenerator:
     Configuration includes the width of the ALU, user-defined opcodes, and input constraints and comes from
     an instance of ALUConfig class from the `alu_config` module.
     """
-    def __init__(self, config: ALUConfig, output_dir: str = "src"):
+    def __init__(self, config: common, output_dir: str = "src"):
         """
         Initialize the ALUGenerator with a configuration and output directory.
         """
@@ -27,9 +26,8 @@ class ALUGenerator:
 
         self.module_name = "templatized_alu"
         self.group_map = {
-            "add": ["add", "sub", "lt", "gt", "le", "ge"],
-            "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
-            "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"]
+            group_info.group.value: [op.name for op in group_info.opcodes]
+            for group_info in SUPPORTED_GROUPS
         }
 
     def generate(self):
