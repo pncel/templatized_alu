@@ -1,74 +1,55 @@
-from enum import Enum
+from enum import Enum, auto
+from collections import namedtuple
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional, Tuple, Union
+from dora.core.arch.isa.datatype import (
+    ArchDataType, ArchVectorType, ArchUnionType, 
+    ArchIntegerType, ArchFloatType, ArchFixedType
+)
+from dora.core.arch.isa import *
+from dora.core.arch.isa.ops import ArchOpType, OpType
 # shared information between generator and module.
 
 # === Supported Opcodes Definition ===
-# supported ops should be a named tuple
-# make into enum instead of strings
-# describe ISA by mapping each operation to a tuple (number of inputs, number of outputs, and datatype)
-# ^ separate file to describe the classes for operations
 # _SUPPORTED_OPCODE_GROUPS: Dict[str, List[str]] = {
 #     "add": ["add", "sub", "lt", "gt", "le", "ge"],
 #     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
 #     "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
 # }
 
-class DataType(Enum):
-    #stuff
+# === Named Tuple Approach ===
+# === Opcode Structure Definition ===
+Operation = namedtuple('Operation', [
+    'optype', 'num_inputs', 'input_A', 'input_B', 'output',
+])
 
-@dataclass(frozen=True)
-class Opcode:
-    name: str
-    num_inputs: int
-    num_outputs: int
-    datatype: DataType
-
-class OpcodeGroup(Enum):
-    ADD = "add"
-    BOOL = "bool"
-    SHIFT = "shift"
-
-@dataclass
-class OpcodeGroupInfo:
-    group: OpcodeGroup
-    opcodes: List[Opcode]
-
-# Define opcodes
-ADD_OPS = [
-    Opcode("add", 2, 1, DataType.),
-    Opcode("sub", 2, 1, DataType.),
-    Opcode("lt", 2, 1, DataType.),
-    Opcode("gt", 2, 1, DataType.),
-    Opcode("le", 2, 1, DataType.),
-    Opcode("ge", 2, 1, DataType.),
-]
-
-BOOL_OPS = [
-    Opcode("xor", 2, 1, DataType.),
-    Opcode("eq", 2, 1, DataType.),
-    Opcode("ne", 2, 1, DataType.),
-    Opcode("and", 2, 1, DataType.),
-    Opcode("or", 2, 1, DataType.),
-    Opcode("not", 1, 1, DataType.),
-    Opcode("nand", 2, 1, DataType.),
-    Opcode("nor", 2, 1, DataType.),
-    Opcode("xnor", 2, 1, DataType.),
-    Opcode("le", 2, 1, DataType.),
-    Opcode("ge", 2, 1, DataType.),
-]
-
-SHIFT_OPS = [
-    Opcode("sll", 2, 1, DataType.),
-    Opcode("slr", 2, 1, DataType.),
-    Opcode("sar", 2, 1, DataType.),
-    Opcode("rotationleft", 2, 1, DataType.),
-    Opcode("rotationright", 2, 1, DataType.),
+# === Opcode Definitions ===
+OPERATIONS_NT = [
+    Operation(
+        optype = OpType.ADD,
+        num_inputs = 2,
+        input_A = INT32,
+        input_B = INT32,
+        output = INT32,
+    ),
+    Operation(
+        optype = OpType.SUB,
+        num_inputs = 2,
+        input_A = INT32,
+        input_B = INT32,
+        output = INT32,
+    )
 ]
 
 # Final registry
-SUPPORTED_GROUPS: List[OpcodeGroupInfo] = [
-    OpcodeGroupInfo(OpcodeGroup.ADD, ADD_OPS),
-    OpcodeGroupInfo(OpcodeGroup.BOOL, BOOL_OPS),
-    OpcodeGroupInfo(OpcodeGroup.SHIFT, SHIFT_OPS),
+SUPPORTED_GROUPS = OPERATIONS_NT
+
+# === Tuple Approach ===
+# ArchDataType vs. str for tuple definitions? 
+OperationTuple = Tuple[OpType, int, ArchDataType, ArchDataType, ArchDataType]
+
+OPERATIONS_T : List[OperationTuple] = [
+    (OpType.ADD, 2, INT32, INT32, INT32),
+    (OpType.SUB, 2, INT32, INT32, INT32),
+    (OpType.LT, 2, INT32, INT32, BOOL),
 ]
