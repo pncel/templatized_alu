@@ -60,4 +60,9 @@ module templatized_alu (
     .out          ( out )
   );
 
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0, templatized_alu);  // Replace 'templatized_alu' with your top module name
+  end
+
 endmodule

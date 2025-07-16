@@ -3,7 +3,7 @@
 set -e
 
 echo "🔍 Running Verilator lint..."
-verilator --lint-only -sv src/*.sv
+verilator --lint-only -sv --top-module templatized_alu src/*.sv
 
 echo "✅ Verilator lint passed!"
 

@@ -30,7 +30,7 @@ user_ops = constraints.get("supported_opcodes")
 group_map = {
     "add": ["add", "sub", "lt", "gt", "le", "ge"],
     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
-    "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
+    "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"]
     
     # for later :)
     # "multiplication": [],

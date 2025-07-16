@@ -109,10 +109,12 @@ async def test_templatized_alu(dut):
 
     # List to collect all mismatch messages
     failures = []
+    # list to collect working messages
+    successes = []
 
     # Generate a sequence of random tests
     for cycle in range(100):
-        await RisingEdge(dut.clk)
+        #await RisingEdge(dut.clk)
         # Choose random inputs
         opcode = random.choice(SUPPORTED_OPCODES)
         a_val  = random.randint(A_min, A_max)
@@ -123,7 +125,12 @@ async def test_templatized_alu(dut):
         dut.A.value      = a_val
         dut.B.value      = b_val
         # Wait for output to stabilize
+        await RisingEdge(dut.clk)
         await Timer(10, units="ns")
+
+        # Log the en signal value here:
+        en_val = dut.en.value.integer if hasattr(dut.en.value, "integer") else int(dut.en.value)
+        dut._log.info(f"Cycle {cycle}: en={en_val}, op={opcode}, A={a_val}, B={b_val}")
 
         # 4.a) Functional coverage sampling
         cover_opcode(opcode)
@@ -131,13 +138,23 @@ async def test_templatized_alu(dut):
         cover_b(b_val)
 
         # 4.b) Correctness check: compare DUT output to expected value
-        actual = int(dut.out.value)
+        if dut.out.value.is_resolvable:
+            actual = int(dut.out.value)
+        else:
+            dut._log.warning(f"Unresolvable 'x' in output: out = {dut.out.value}")
+            actual = 0  # Or skip this test case
+            failures.append(f"Unresolvable output: op={opcode}, A={a_val}, B={b_val}, out={dut.out.value}")
+            continue
         expected = OP_FUNCS[opcode](a_val, b_val)
         if actual != expected:
             # Don't assert immediately; record the failure
             msg = (f"Mismatch: op={opcode}, A={a_val}, B={b_val}, "
                    f"expect={expected}, got={actual}")
             failures.append(msg)
+        else:
+            msg = (f"✅Success: op={opcode}, A={a_val}, B={b_val}, "
+                   f"expect={expected}, got={actual}")
+            successes.append(msg)
 
     # 5. Report coverage and fail if any bin is missing
     coverage_db.report_coverage(dut._log.info, bins=True)
@@ -157,6 +174,10 @@ async def test_templatized_alu(dut):
         for fmsg in failures:
             dut._log.error(fmsg)
         dut._log.error("=== END FAILURE SUMMARY ===")
+        dut._log.info("=== BEGIN SUCCESS SUMMARY ===")
+        for smsg in successes:
+            dut._log.info(smsg)
+        dut._log.info("=== END SUCCESS SUMMARY ===")
         assert False, f"{len(failures)} total mismatches/errors encountered"
     else:
         dut._log.info("✅ All opcodes exercised and outputs verified!")

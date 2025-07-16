@@ -21,7 +21,7 @@ module alu_shift (
                 OPCODE_SAR:        result = $signed(A) >>> B;
                 OPCODE_ROTATIONLEFT:   result = (A << B) | (A >> (32 - B));
                 OPCODE_ROTATIONRIGHT:  result = (A >> B) | (A << (32 - B));
-                default:           result = 0;
+                default:           result = 3;
             endcase
         end
     end

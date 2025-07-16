@@ -6,7 +6,7 @@ module alu_add (
     input  logic en,
     output logic [31:0] result
 );
-
+    
     // Opcode constants
     localparam [3:0] OPCODE_ADD = 4'b0000;
     localparam [3:0] OPCODE_SUB = 4'b0001;
@@ -35,7 +35,6 @@ module alu_add (
         is_sub         = 1'b0;
         _b_mod         = 32'b0;
         carry_in       = 1'b0;
-        add_sub_result = 32'b0;
 
         sub_result_ext  = 33'b0;
         sign_flag       = 1'b0;
@@ -64,6 +63,7 @@ module alu_add (
             endcase
         end else begin
             result_internal = '0;
+            add_sub_result = 32'b0;
         end
     end
 

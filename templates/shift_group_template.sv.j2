@@ -31,7 +31,7 @@ module alu_shift (
                 {% if 'rotationright' in ops %}
                 OPCODE_ROTATIONRIGHT:  result = (A >> B) | (A << ({{ width }} - B));
                 {% endif %}
-                default:           result = 0;
+                default:           result = 3;
             endcase
         end
     end

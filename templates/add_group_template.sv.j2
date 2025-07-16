@@ -6,7 +6,7 @@ module alu_add (
     input  logic en,
     output logic [{{ width-1 }}:0] result
 );
-
+    
     // Opcode constants
     {% for op in ops %}
     localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
@@ -45,7 +45,6 @@ module alu_add (
         is_sub         = 1'b0;
         _b_mod         = {{ width }}'b0;
         carry_in       = 1'b0;
-        add_sub_result = {{ width }}'b0;
         {% endif %}
 
         {% if 'lt' in ops or 'gt' in ops or 'le' in ops or 'ge' in ops %}
@@ -105,6 +104,9 @@ module alu_add (
             endcase
         end else begin
             result_internal = '0;
+            {% if 'sub' in ops or 'add' in ops %}
+            add_sub_result = {{ width }}'b0;
+            {% endif %}
         end
     end
 
