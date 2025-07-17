@@ -17,33 +17,6 @@ from dora.core.arch.isa.ops import ArchOpType, OpType
 #     "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
 # }
 
-# === Named Tuple Approach ===
-# === Opcode Structure Definition ===
-Operation = namedtuple('Operation', [
-    'optype', 'num_inputs', 'input_A', 'input_B', 'output',
-])
-
-# === Opcode Definitions ===
-OPERATIONS_NT = [
-    Operation(
-        optype = OpType.ADD,
-        num_inputs = 2,
-        input_A = INT32,
-        input_B = INT32,
-        output = INT32,
-    ),
-    Operation(
-        optype = OpType.SUB,
-        num_inputs = 2,
-        input_A = INT32,
-        input_B = INT32,
-        output = INT32,
-    )
-]
-
-# Final registry
-SUPPORTED_GROUPS = OPERATIONS_NT
-
 # === Tuple Approach ===
 # ArchDataType vs. str for tuple definitions? 
 OperationTuple = Tuple[OpType, int, ArchDataType, ArchDataType, ArchDataType]
@@ -52,4 +25,25 @@ OPERATIONS_T : List[OperationTuple] = [
     (OpType.ADD, 2, INT32, INT32, INT32),
     (OpType.SUB, 2, INT32, INT32, INT32),
     (OpType.LT, 2, INT32, INT32, BOOL),
+    (OpType.GT, 2, INT32, INT32, BOOL),
+    (OpType.LE, 2, INT32, INT32, BOOL),
+    (OpType.GE, 2, INT32, INT32, BOOL),
+    
+    # Bool group operations
+    (OpType.XOR, 2, INT32, INT32, BOOL),
+    (OpType.EQ, 2, INT32, INT32, BOOL), 
+    (OpType.NE, 2, INT32, INT32, BOOL), 
+    (OpType.AND, 2, INT32, INT32, BOOL),
+    (OpType.OR, 2, INT32, INT32, BOOL),
+    (OpType.NOT, 1, INT32, INT32, BOOL),
+    (OpType.NAND, 2, INT32, INT32, BOOL),
+    (OpType.NOR, 2, INT32, INT32, BOOL),
+    (OpType.XNOR, 2, INT32, INT32, BOOL),
+    
+    # Shift group operations
+    (OpType.SLL, 2, INT32, INT32, INT32),      # Shift left logical
+    (OpType.SLR, 2, INT32, INT32, INT32),      # Shift left right
+    (OpType.SAR, 2, INT32, INT32, INT32),      # Shift arithmetic right
+    (OpType.ROTATIONLEFT, 2, INT32, INT32, INT32),
+    (OpType.ROTATIONRIGHT, 2, INT32, INT32, INT32),
 ]
