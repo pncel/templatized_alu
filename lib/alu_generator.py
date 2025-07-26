@@ -9,7 +9,7 @@ class ALUGenerator:
     Configuration includes the width of the ALU, user-defined opcodes, and input constraints and comes from
     an instance of ALUConfig class from the `alu_config` module.
     """
-    def __init__(self, config: common, output_dir: str = "src"):
+    def __init__(self, config: "ALU_Module", output_dir: str = "src"):
         """
         Initialize the ALUGenerator with a configuration and output directory.
         """
@@ -37,6 +37,10 @@ class ALUGenerator:
         # === Set Configuration Variables === #
         width = self.config.width
         user_ops = self.config.user_opcodes
+        # input_A = self.config.input_a_name
+        # input_B = self.config.input_b_name
+        # input_C = self.config.input_c_name
+        # result = self.config.result_name
         # === Output File Directory === #
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -86,6 +90,12 @@ class ALUGenerator:
                 op_width=op_width,
                 ops=active_groups[group],
                 op_code={op: default_opcodes[op] for op in active_groups[group]},
+                # input_A=input_A
+                # input_B=input_B,
+                # input_C=input_C,
+                # result=result,
+                # signed=is_signed,
+                # unsigned=is_unsigned
             )
             self._write_file(f"alu_{group}.sv", rendered)
 

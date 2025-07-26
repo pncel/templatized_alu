@@ -21,29 +21,29 @@ from dora.core.arch.isa.ops import ArchOpType, OpType
 # ArchDataType vs. str for tuple definitions? 
 OperationTuple = Tuple[OpType, int, ArchDataType, ArchDataType, ArchDataType]
 
-OPERATIONS_T : List[OperationTuple] = [
+OPERATIONS_US : List[OperationTuple] = [
     (OpType.ADD, 2, INT32, INT32, INT32),
     (OpType.SUB, 2, INT32, INT32, INT32),
-    (OpType.LT, 2, INT32, INT32, BOOL),
-    (OpType.GT, 2, INT32, INT32, BOOL),
-    (OpType.LE, 2, INT32, INT32, BOOL),
-    (OpType.GE, 2, INT32, INT32, BOOL),
+    (OpType.LT, 2, BOOL, INT32, INT32),
+    (OpType.GT, 2, BOOL, INT32, INT32),
+    (OpType.LE, 2, BOOL, INT32, INT32),
+    (OpType.GE, 2, BOOL, INT32, INT32),
     
     # Bool group operations
-    (OpType.XOR, 2, INT32, INT32, BOOL),
-    (OpType.EQ, 2, INT32, INT32, BOOL), 
-    (OpType.NE, 2, INT32, INT32, BOOL), 
-    (OpType.AND, 2, INT32, INT32, BOOL),
-    (OpType.OR, 2, INT32, INT32, BOOL),
-    (OpType.NOT, 1, INT32, INT32, BOOL),
-    (OpType.NAND, 2, INT32, INT32, BOOL),
-    (OpType.NOR, 2, INT32, INT32, BOOL),
-    (OpType.XNOR, 2, INT32, INT32, BOOL),
+    (OpType.XOR, 2, BOOL, INT32, INT32),
+    (OpType.EQ, 2, BOOL, INT32, INT32), 
+    (OpType.NE, 2, BOOL, INT32, INT32), 
+    (OpType.AND, 2, BOOL, INT32, INT32),
+    (OpType.OR, 2, BOOL, INT32, INT32),
+    (OpType.NOT, 1, BOOL, INT32, INT32),
+    (OpType.NAND, 2, BOOL, INT32, INT32),
+    (OpType.NOR, 2, BOOL, INT32, INT32),
+    (OpType.XNOR, 2, BOOL, INT32, INT32),
     
     # Shift group operations
-    (OpType.SLL, 2, INT32, INT32, INT32),      # Shift left logical
-    (OpType.SLR, 2, INT32, INT32, INT32),      # Shift left right
-    (OpType.SAR, 2, INT32, INT32, INT32),      # Shift arithmetic right
+    (OpType.SLL, 2, INT32, INT32, INT32),      # Shift logical left / SLL
+    (OpType.SLR, 2, INT32, INT32, INT32),      # Shift logical right / SRL
+    (OpType.SAR, 2, INT32, INT32, INT32),      # Shift arithmetic right / SRA
     (OpType.ROTATIONLEFT, 2, INT32, INT32, INT32),
     (OpType.ROTATIONRIGHT, 2, INT32, INT32, INT32),
 ]

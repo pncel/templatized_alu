@@ -1,3 +1,4 @@
+
 // alu_32bit_add_sub_lt_gt.sv
 module alu_add (
     input  logic [31:0] A,
@@ -7,66 +8,36 @@ module alu_add (
     output logic [31:0] result
 );
 
-    // Opcode constants
+    // Localparam opcodes
     localparam [3:0] OPCODE_ADD = 4'b0000;
     localparam [3:0] OPCODE_SUB = 4'b0001;
     localparam [3:0] OPCODE_LT = 4'b0010;
     localparam [3:0] OPCODE_GT = 4'b0011;
 
-    // Internal signals
-    logic [31:0] result_internal;
-    logic [31:0] _a, _b;
-
-    logic [31:0] add_sub_result;
-    
-    logic [31:0] _b_mod;
-    logic is_sub;
-    logic carry_in;
-
-    logic [32:0] sub_result_ext;
+    // Internal computation signals
+    logic [32:0] extended_sub;
     logic sign_flag, overflow_flag, zero_flag;
 
- logic lt_result;  logic gt_result; 
+    // Compute flags for comparison operations
     always_comb begin
-        _a              = A;
-        _b              = B;
-        result_internal = 32'b0;
-
-        is_sub         = 1'b0;
-        _b_mod         = 32'b0;
-        carry_in       = 1'b0;
-        add_sub_result = 32'b0;
-
-        sub_result_ext  = 33'b0;
-        sign_flag       = 1'b0;
-        overflow_flag   = 1'b0;
-        zero_flag       = 1'b0;
- lt_result = 1'b0;  gt_result = 1'b0; 
-
-        if (en) begin
-            is_sub = (opcode == OPCODE_SUB);
-            _b_mod = is_sub ? ~_b : _b;
-            carry_in = is_sub ? 1'b1 : 1'b0;
-            add_sub_result = _a + _b_mod + { 31'b0, carry_in };
-
-            sub_result_ext = {1'b0, _a} - {1'b0, _b};
-            sign_flag = sub_result_ext[32];
-            overflow_flag = (_a[31] != _b[31]) && (sub_result_ext[31] != _a[31]);
-            zero_flag = (sub_result_ext[31:0] == 0);
-
- lt_result = (sign_flag ^ overflow_flag);  gt_result = !(sign_flag ^ overflow_flag || zero_flag); 
-            case (opcode)
-                OPCODE_ADD: result_internal = add_sub_result;
-                OPCODE_SUB: result_internal = add_sub_result;
-                OPCODE_LT: result_internal = 32'(lt_result);
-                OPCODE_GT: result_internal = 32'(gt_result);
-                default: result_internal = 32'b0;
-            endcase
-        end else begin
-            result_internal = '0;
-        end
+        extended_sub = {1'b0, A} - {1'b0, B};
+        sign_flag = extended_sub[32];
+        overflow_flag = (A[31] != B[31]) && (extended_sub[31] != A[31]);
+        zero_flag = (extended_sub[31:0] == 0);
     end
 
-    assign result = result_internal;
+    // Result logic
+    always_comb begin
+        result = 32'b0; // Default result
+        if (en) begin
+            case (opcode)
+                OPCODE_ADD: result = A + B;
+                OPCODE_SUB: result = A - B;
+                OPCODE_LT:  result = (sign_flag ^ overflow_flag) ? { 32{1'b1}} : { 32{1'b0}};
+                OPCODE_GT:  result = !(sign_flag ^ overflow_flag || zero_flag) ? { 32{1'b1}} : { 32{1'b0}};
+                default:    result = 32'b0;
+            endcase
+        end
+    end
 
 endmodule
