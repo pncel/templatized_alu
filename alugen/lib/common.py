@@ -6,8 +6,8 @@ from dora.core.arch.isa.datatype import (
     ArchDataType, ArchVectorType, ArchUnionType, 
     ArchIntegerType, ArchFloatType, ArchFixedType
 )
-from dora.core.arch.isa import *
 from dora.core.arch.isa.ops import ArchOpType, OpType
+from dora.core.arch.isa import INT32, BOOL
 # shared information between generator and module.
 
 # === Supported Opcodes Definition ===
