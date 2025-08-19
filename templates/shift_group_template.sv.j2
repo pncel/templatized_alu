@@ -7,29 +7,32 @@ module alu_shift (
     output logic [{{ width-1 }}:0] result
 );
 
+    logic [4:0] shamt;
+
     // Localparam opcodes
     {% for op in ops %}
     localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
     {% endfor %}
 
     always_comb begin
+        shamt = B[4:0];  // shift amount modulo 32
         result = {{ width }}'b0; // Default result
         if (en) begin
             case (opcode)
                 {% if 'sll' in ops %}
-                OPCODE_SLL:        result = A << B;
+                OPCODE_SLL:        result = A << shamt;
                 {% endif %}
                 {% if 'srl' in ops %}
-                OPCODE_SRL:        result = A >> B;
+                OPCODE_SRL:        result = A >> shamt;
                 {% endif %}
                 {% if 'sar' in ops %}
-                OPCODE_SAR:        result = $signed(A) >>> B;
+                OPCODE_SAR:        result = $signed(A) >>> shamt;
                 {% endif %}
                 {% if 'rotationleft' in ops %}
-                OPCODE_ROTATIONLEFT:   result = (A << B) | (A >> ({{ width }} - B));
+                OPCODE_ROTATIONLEFT:   result = (A << shamt) | (A >> ({{ width }} - shamt));
                 {% endif %}
                 {% if 'rotationright' in ops %}
-                OPCODE_ROTATIONRIGHT:  result = (A >> B) | (A << ({{ width }} - B));
+                OPCODE_ROTATIONRIGHT:  result = (A >> shamt) | (A << ({{ width }} - shamt));
                 {% endif %}
                 default:           result = 3;
             endcase

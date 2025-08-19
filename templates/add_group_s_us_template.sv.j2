@@ -1,0 +1,110 @@
+module alu_add_s_us (
+    input  logic [{{ width-1 }}:0] A,
+    input  logic [{{ width-1 }}:0] B,
+    input  logic [{{ op_width - 1 }}:0] opcode,
+    input  logic en,
+    output logic [{{ width-1 }}:0] result
+);
+    logic [{{ width-1 }}:0] _a, _b, _b_mod, result_internal;
+    logic [{{ width }}:0]   add_sub_result;
+    logic                    is_sub, carry_in;
+
+    {% if 'lt_s' in ops or 'lt_u' in ops or 'gt_s' in ops or 'gt_u' in ops or 'le_s' in ops or 'le_u' in ops or 'ge_s' in ops or 'ge_u' in ops %}
+    logic [{{ width }}:0] sub_result_ext;
+    logic                  sign_flag, overflow_flag, zero_flag;
+    logic                  lt_result, gt_result, le_result, ge_result;
+    {% endif %}
+
+    {# 
+        This always_comb block initializes the internal signals and computes the result based on the opcode.
+    #}
+
+    always_comb begin
+        _a              = A;
+        _b              = B;
+        result_internal = {{ width }}'b0;
+
+        {% if 'add_s' in ops or 'add_u' in ops or 'sub_s' in ops or 'sub_u' in ops %}
+        is_sub         = 1'b0;
+        _b_mod         = {{ width }}'b0;
+        carry_in       = 1'b0;
+        {% endif %}
+
+        {% if 'lt_s' in ops or 'lt_u' in ops or 'gt_s' in ops or 'gt_u' in ops or 'le_s' in ops or 'le_u' in ops or 'ge_s' in ops or 'ge_u' in ops %}
+        sub_result_ext  = {{ width+1 }}'b0;
+        sign_flag       = 1'b0;
+        overflow_flag   = 1'b0;
+        zero_flag       = 1'b0;
+        {% endif %}
+
+        if (en) begin
+            {% if 'add_s' in ops or 'add_u' in ops or 'sub_s' in ops or 'sub_u' in ops %}
+            is_sub   = (opcode == OPCODE_SUB_S) || (opcode == OPCODE_SUB_U);
+            _b_mod   = is_sub ? ~_b : _b;
+            carry_in = is_sub ? 1'b1 : 1'b0;
+            add_sub_result = _a + _b_mod + { {{width-1}}'b0, carry_in };
+            {% endif %}
+
+            {% if 'lt_s' in ops %}
+            if (opcode == OPCODE_LT_S) begin
+                lt_result = ($signed(_a) < $signed(_b));
+            end
+            {% endif %}
+            {% if 'lt_u' in ops %}
+            if (opcode == OPCODE_LT_U) begin
+                lt_result = (_a < _b);
+            end
+            {% endif %}
+            {% if 'gt_s' in ops %}
+            if (opcode == OPCODE_GT_S) begin
+                gt_result = ($signed(_a) > $signed(_b));
+            end
+            {% endif %}
+            {% if 'gt_u' in ops %}
+            if (opcode == OPCODE_GT_U) begin
+                gt_result = (_a > _b);
+            end
+            {% endif %}
+            {% if 'le_s' in ops %}
+            if (opcode == OPCODE_LE_S) begin
+                le_result = ($signed(_a) == $signed(_b));
+            end
+            {% endif %}
+            {% if 'le_u' in ops %}
+            if (opcode == OPCODE_LE_U) begin
+                le_result = (_a == _b);
+            end
+            {% endif %}
+            {% if 'ge_s' in ops %}
+            if (opcode == OPCODE_GE_S) begin
+                ge_result = ($signed(_a) == $signed(_b));
+            end
+            {% endif %}
+            {% if 'ge_u' in ops %}
+            if (opcode == OPCODE_GE_U) begin
+                ge_result = (_a == _b);
+            end
+            {% endif %}
+
+            case (opcode)
+                {% if 'add_s' in ops %} OPCODE_ADD_S: result_internal = add_sub_result; {% endif %}
+                {% if 'add_u' in ops %} OPCODE_ADD_U: result_internal = add_sub_result; {% endif %}
+                {% if 'sub_s' in ops %} OPCODE_SUB_S: result_internal = add_sub_result; {% endif %}
+                {% if 'sub_u' in ops %} OPCODE_SUB_U: result_internal = add_sub_result; {% endif %}
+                {% if 'lt_s'  in ops %} OPCODE_LT_S:  result_internal = { {{ width - 1 }}'b0, lt_result }; {% endif %}
+                {% if 'lt_u'  in ops %} OPCODE_LT_U:  result_internal = { {{ width - 1 }}'b0, lt_result }; {% endif %}
+                {% if 'gt_s'  in ops %} OPCODE_GT_S:  result_internal = { {{ width - 1 }}'b0, gt_result }; {% endif %}
+                {% if 'gt_u'  in ops %} OPCODE_GT_U:  result_internal = { {{ width - 1 }}'b0, gt_result }; {% endif %}
+                {% if 'le_s'  in ops %} OPCODE_LE_S:  result_internal = { {{ width - 1 }}'b0, le_result }; {% endif %}
+                {% if 'le_u'  in ops %} OPCODE_LE_U:  result_internal = { {{ width - 1 }}'b0, le_result }; {% endif %}
+                {% if 'ge_s'  in ops %} OPCODE_GE_S:  result_internal = { {{ width - 1 }}'b0, ge_result }; {% endif %}
+                {% if 'ge_u'  in ops %} OPCODE_GE_U:  result_internal = { {{ width - 1 }}'b0, ge_result }; {% endif %}
+                default: result_internal = {{ width }}'b0;
+            endcase
+        end else begin
+            result_internal = 0;
+        end
+    end
+
+    assign result = result_internal;
+endmodule

@@ -3,7 +3,7 @@ import json
 import random
 import os
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, Timer
+from cocotb.triggers import RisingEdge, Timer, ReadOnly
 from cocotb_coverage.coverage import coverage_db, CoverPoint
 
 # 1. Load constraints from json file
@@ -95,6 +95,9 @@ def cover_b(b):
     "Record B in three zones: min, mid, max."
     pass
 
+def to_signed(val, bits=32):
+    return val - (1 << bits) if val & (1 << (bits - 1)) else val
+
 # 4. Main test: apply stimulus, collect coverage, and check correctness
 @cocotb.test()
 async def test_templatized_alu(dut):
@@ -124,9 +127,12 @@ async def test_templatized_alu(dut):
         dut.op.value = SUPPORTED_OPCODES.index(opcode)
         dut.A.value      = a_val
         dut.B.value      = b_val
+        
         # Wait for output to stabilize
         await RisingEdge(dut.clk)
-        await Timer(10, units="ns")
+        # read val after end of event ### readonly, readwrite
+        await Timer(50, units="ns")
+        # await ReadOnly()
 
         # Log the en signal value here:
         en_val = dut.en.value.integer if hasattr(dut.en.value, "integer") else int(dut.en.value)
@@ -139,12 +145,15 @@ async def test_templatized_alu(dut):
 
         # 4.b) Correctness check: compare DUT output to expected value
         if dut.out.value.is_resolvable:
-            actual = int(dut.out.value)
+            actual_unsigned = int(dut.out.value)
+            actual = to_signed(actual_unsigned, bits=32)
+            #actual = int(dut.out.value)
         else:
             dut._log.warning(f"Unresolvable 'x' in output: out = {dut.out.value}")
             actual = 0  # Or skip this test case
             failures.append(f"Unresolvable output: op={opcode}, A={a_val}, B={b_val}, out={dut.out.value}")
             continue
+        
         expected = OP_FUNCS[opcode](a_val, b_val)
         if actual != expected:
             # Don't assert immediately; record the failure
