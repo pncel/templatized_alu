@@ -9,10 +9,10 @@ module templatized_alu_control (
     localparam logic [3:0] OPCODE_LT = 4'b0010;
     localparam logic [3:0] OPCODE_GT = 4'b0011;
     localparam logic [3:0] OPCODE_XOR = 4'b0100;
-    localparam logic [3:0] OPCODE_SLL = 4'b0101;
-    localparam logic [3:0] OPCODE_SAR = 4'b0110;
-    localparam logic [3:0] OPCODE_ROTATIONLEFT = 4'b0111;
-    localparam logic [3:0] OPCODE_ROTATIONRIGHT = 4'b1000;
+    localparam logic [3:0] OPCODE_LSL = 4'b0101;
+    localparam logic [3:0] OPCODE_ASR = 4'b0110;
+    localparam logic [3:0] OPCODE_ROL = 4'b0111;
+    localparam logic [3:0] OPCODE_ROR = 4'b1000;
 
     always_comb begin
         // default: all groups disabled
@@ -23,10 +23,10 @@ module templatized_alu_control (
             OPCODE_LT: en = {1'b0, 1'b0, 1'b1};  // lt
             OPCODE_GT: en = {1'b0, 1'b0, 1'b1};  // gt
             OPCODE_XOR: en = {1'b0, 1'b1, 1'b0};  // xor
-            OPCODE_SLL: en = {1'b1, 1'b0, 1'b0};  // sll
-            OPCODE_SAR: en = {1'b1, 1'b0, 1'b0};  // sar
-            OPCODE_ROTATIONLEFT: en = {1'b1, 1'b0, 1'b0};  // rotationleft
-            OPCODE_ROTATIONRIGHT: en = {1'b1, 1'b0, 1'b0};  // rotationright
+            OPCODE_LSL: en = {1'b1, 1'b0, 1'b0};  // lsl
+            OPCODE_ASR: en = {1'b1, 1'b0, 1'b0};  // asr
+            OPCODE_ROL: en = {1'b1, 1'b0, 1'b0};  // rol
+            OPCODE_ROR: en = {1'b1, 1'b0, 1'b0};  // ror
             default: en = 3'b0;
         endcase
     end

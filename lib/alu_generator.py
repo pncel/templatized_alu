@@ -1,7 +1,10 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 import math
-from .common import SUPPORTED_GROUPS, OpcodeGroupInfo
+from common import OPERATIONS_US
+
+from dora.core.arch.netlist.module import ArchModule
+
 
 class ALUGenerator:
     """
@@ -9,7 +12,7 @@ class ALUGenerator:
     Configuration includes the width of the ALU, user-defined opcodes, and input constraints and comes from
     an instance of ALUConfig class from the `alu_config` module.
     """
-    def __init__(self, config: "ALU_Module", output_dir: str = "src"):
+    def __init__(self, config: "ArchModule", output_dir: str = "src"):
         """
         Initialize the ALUGenerator with a configuration and output directory.
         """
@@ -25,19 +28,76 @@ class ALUGenerator:
         self.env.filters['enumerate'] = enumerate
 
         self.module_name = "templatized_alu"
-        self.group_map = {
-            group_info.group.value: [op.name for op in group_info.opcodes]
-            for group_info in SUPPORTED_GROUPS
-        }
+        # self.group_map = {
+        #     group_info.group.value: [op.name for op in group_info.opcodes]
+        #     for group_info in SUPPORTED_GROUPS
+        # }
+
+        self.group_map = {}
+        for group, ops in OPERATIONS_US.items():
+            op_names = []
+            for op in ops:
+                op_names.append(op.op_type.name)
+            self.group_map[group] = op_names
 
     def generate(self):
         """
         Generate the ALU SystemVerilog files based on the configuration.
         """
-        # === Set Configuration Variables === #
-        width = self.config.width
-        user_ops = self.config.user_opcodes
-        # input_A = self.config.input_a_name
+        # === Collect ports_info per operation === #
+        # NOTE: In the future, if groups require distinct bit-widths/ports,
+        #       create ports_info_add / ports_info_bool / ports_info_shift here.
+        ports_info = {}
+        user_ops = self.config.operations
+        first_op = True
+
+        for op_name, op_type in user_ops.items():
+            ports = op_type.ports
+
+            result_port = ports[-1]  # Last port is always the result
+            input_ports = ports[:-1]  # All but last are inputs
+
+            # === Handle inputs ===
+            for i, port in enumerate(input_ports):
+                key = make_internal_key(i)
+                port_info = {
+                    "name": port.name,
+                    "bit_width": port.datatype.bit_width,
+                    "datatype": port.datatype
+                }
+
+                if first_op:
+                    ports_info[key] = port_info
+                else:
+                    expected = ports_info[key]
+                    if (expected["bit_width"] != port.datatype.bit_width or
+                        expected["datatype"] != port.datatype):
+                        raise TypeError(
+                            f"Port mismatch for {key} in {op_name}: "
+                            f"expected {expected}, got {port_info}"
+                        )
+
+            # === Handle result ===
+            result_info = {
+                "name": result_port.name,
+                "bit_width": result_port.datatype.bit_width,
+                "datatype": result_port.datatype
+            }
+
+            if first_op:
+                ports_info["dora_result"] = result_info
+                first_op = False
+            else:
+                expected = ports_info["dora_result"]
+                if (expected["bit_width"] != result_port.datatype.bit_width or
+                    expected["datatype"] != result_port.datatype):
+                    raise TypeError(
+                        f"Result mismatch in {op_name}: "
+                        f"expected {expected}, got {result_info}"
+                    )
+
+
+        input_A = ports_info_by_op.get("input_A")
         # input_B = self.config.input_b_name
         # input_C = self.config.input_c_name
         # result = self.config.result_name
@@ -49,15 +109,12 @@ class ALUGenerator:
         # active_groups is then flattened to a list of operations
         active_groups = {}
         for group, members in self.group_map.items():
-            # Build a list of operations from this group that the user selected
-            selected_ops = []
-            for op in members:
-                if op in user_ops:
-                    selected_ops.append(op)
+            # Keep only the operations that the user explicitly selected
+            selected_ops = [op for op in members if op in user_ops]
             if selected_ops:
                 active_groups[group] = selected_ops
 
-        if not any(active_groups.values()):
+        if not active_groups:
             raise ValueError("No operations selected.")
 
         group_list = list(active_groups.keys())
@@ -85,12 +142,13 @@ class ALUGenerator:
         for group in active_groups:
             template = self.env.get_template(f"{group}_group_template.sv.j2")
             rendered = template.render(
-                module_name=f"alu_{group}",
-                width=width,
-                op_width=op_width,
-                ops=active_groups[group],
-                op_code={op: default_opcodes[op] for op in active_groups[group]},
-                # input_A=input_A
+                module_name = f"alu_{group}",
+                width       = width,
+                log2_width  = math.ceil(math.log2(width)),
+                op_width    = op_width,
+                ops         = active_groups[group],
+                op_code     = {op: default_opcodes[op] for op in active_groups[group]},
+                input_A=input_a_port
                 # input_B=input_B,
                 # input_C=input_C,
                 # result=result,
@@ -139,3 +197,11 @@ class ALUGenerator:
         with open(path, "w") as f:
             f.write(content)
         print(f"✅ Generated {path}")
+
+def make_internal_key(idx: int) -> str:
+    if idx == 0:
+        return "dora_input_a"
+    elif idx == 1:
+        return "dora_input_b"
+    elif idx == 2:
+        return "dora_input_c"

@@ -1,7 +1,7 @@
 {
     "width": 32,
     "user_opcodes": [
-        "add", "sub", "lt", "gt", "xor", "sll", "sar", "rotationleft", "rotationright"
+        "add", "sub", "lt", "gt", "xor", "lsl", "asr", "rol", "ror"
     ],
     "input_constraints": {
     "A_range": [0, 100],

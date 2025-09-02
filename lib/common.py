@@ -19,31 +19,36 @@ from dora.core.arch.isa.ops import ArchOpType, OpType
 
 # === Tuple Approach ===
 # ArchDataType vs. str for tuple definitions? 
-OperationTuple = Tuple[OpType, int, ArchDataType, ArchDataType, ArchDataType]
+Operation = namedtuple("Operation", ["op_type", "num_operands", "result_type", "lhs_type", "rhs_type"])
 
-OPERATIONS_US : List[OperationTuple] = [
-    (OpType.ADD, 2, INT32, INT32, INT32),
-    (OpType.SUB, 2, INT32, INT32, INT32),
-    (OpType.LT, 2, BOOL, INT32, INT32),
-    (OpType.GT, 2, BOOL, INT32, INT32),
-    (OpType.LE, 2, BOOL, INT32, INT32),
-    (OpType.GE, 2, BOOL, INT32, INT32),
-    
-    # Bool group operations
-    (OpType.XOR, 2, BOOL, INT32, INT32),
-    (OpType.EQ, 2, BOOL, INT32, INT32), 
-    (OpType.NE, 2, BOOL, INT32, INT32), 
-    (OpType.AND, 2, BOOL, INT32, INT32),
-    (OpType.OR, 2, BOOL, INT32, INT32),
-    (OpType.NOT, 1, BOOL, INT32, INT32),
-    (OpType.NAND, 2, BOOL, INT32, INT32),
-    (OpType.NOR, 2, BOOL, INT32, INT32),
-    (OpType.XNOR, 2, BOOL, INT32, INT32),
-    
-    # Shift group operations
-    (OpType.SLL, 2, INT32, INT32, INT32),      # Shift logical left / SLL
-    (OpType.SLR, 2, INT32, INT32, INT32),      # Shift logical right / SRL
-    (OpType.SAR, 2, INT32, INT32, INT32),      # Shift arithmetic right / SRA
-    (OpType.ROTATIONLEFT, 2, INT32, INT32, INT32),
-    (OpType.ROTATIONRIGHT, 2, INT32, INT32, INT32),
-]
+# operations are not groups here but renderer needs some classification to know which alus to generate or not generate
+OPERATIONS_US: Dict[str, List[Operation]] = {
+    "add": [
+        Operation(OpType.ADD, 2, INT32, INT32, INT32),
+        Operation(OpType.SUB, 2, INT32, INT32, INT32),
+        Operation(OpType.LT, 2, BOOL, INT32, INT32),
+        Operation(OpType.GT, 2, BOOL, INT32, INT32),
+        Operation(OpType.LE, 2, BOOL, INT32, INT32),
+        Operation(OpType.GE, 2, BOOL, INT32, INT32),
+    ],
+
+    "bool": [
+        Operation(OpType.XOR, 2, BOOL, INT32, INT32),
+        Operation(OpType.EQ, 2, BOOL, INT32, INT32),
+        Operation(OpType.NE, 2, BOOL, INT32, INT32),
+        Operation(OpType.AND, 2, BOOL, INT32, INT32),
+        Operation(OpType.OR, 2, BOOL, INT32, INT32),
+        Operation(OpType.NOT, 1, BOOL, INT32),
+        Operation(OpType.NAND, 2, BOOL, INT32, INT32),
+        Operation(OpType.NOR, 2, BOOL, INT32, INT32),
+        Operation(OpType.XNOR, 2, BOOL, INT32, INT32),
+    ],
+
+    "shift": [
+        Operation(OpType.LSL, 2, INT32, INT32, INT32),
+        Operation(OpType.LSR, 2, INT32, INT32, INT32),
+        Operation(OpType.ASR, 2, INT32, INT32, INT32),
+        Operation(OpType.ROL, 2, INT32, INT32, INT32),
+        Operation(OpType.ROR, 2, INT32, INT32, INT32),
+    ],
+}

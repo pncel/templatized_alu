@@ -33,7 +33,7 @@ def generate_alu(constraint_path: str, output_dir: str = "src") -> None:
     group_map = {
         "add": ["add", "sub", "lt", "gt", "le", "ge"],
         "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
-        "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
+        "shift": ["lsl", "lsr", "asr", "rol", "ror"],
         
         # for later :)
         # "multiplication": [],
@@ -101,6 +101,7 @@ def generate_alu(constraint_path: str, output_dir: str = "src") -> None:
             rendered    = tmpl.render(
                 module_name   = f"alu_{group}",
                 width         = width,
+                log2_width    = math.ceil(math.log2(width)),
                 op_width      = op_width,
                 ops           = active_groups[group],
                 op_code       = { op: default_opcodes[op] for op in active_groups[group] },
