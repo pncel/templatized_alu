@@ -1,39 +1,127 @@
-// alu_{{ width }}bit_shift_{{ ops | join('_') }}.sv
+// Core logic:
 module alu_shift (
-    input  logic [{{ width-1 }}:0] A,
-    input  logic [{{ width-1 }}:0] B, // B used for shift amount
-    input  logic [{{ op_width-1 }}:0] opcode,
+    input logic [{{ width-1 }}:0] A,
+    input logic [{{ width-1 }}:0] B,
+    input logic [{{ op_width-1 }}:0] opcode,
     input logic en,
     output logic [{{ width-1 }}:0] result
 );
+
+    logic [{{ log2_width - 1 }}:0] shamt; // Shift amount
+    assign shamt = B[{{ log2_width - 1 }}:0]; // Extracting the lower bits for shift amount
 
     // Localparam opcodes
     {% for op in ops %}
     localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
     {% endfor %}
 
+    logic [{{ width-1 }}:0] stage0;
+
+    {% for i in range(1, log2_width + 1) %}
+    logic [{{ width-1 }}:0] stage{{ i }};
+    {% endfor %}
+
+    // Fill bit & control signal definition
+    logic fill;
+    {% if 'lsl' in ops %}
+    logic shift_left;
+    {% endif %}
+    {% if 'lsr' in ops or 'asr' in ops %}
+    logic shift_right;
+    {% endif %}
+    {% if 'ror' in ops %}
+    logic rotate_right;
+    {% endif %}
+    {% if 'rol' in ops %}
+    logic rotate_left;
+    {% endif %}
+
     always_comb begin
-        result = {{ width }}'b0; // Default result
+        stage0 = A; // Default stage0 value
+        {% for i in range(1, log2_width + 1) %}
+        stage{{ i }} = {{ width }}'b0; // Default stage value;
+        {% endfor %}
+        {% if 'lsl' in ops %}
+        shift_left = 1'b0; // Default shift direction
+        {% endif %}
+        {% if 'lsr' in ops or 'asr' in ops %}
+        shift_right = 1'b0; // Default shift direction
+        {% endif %}
+        {% if 'ror' in ops %}
+        rotate_right = 1'b0; // Default rotation direction
+        {% endif %}
+        {% if 'rol' in ops %}
+        rotate_left = 1'b0; // Default rotation direction
+        {% endif %}
+        fill = 1'b0; // Default fill bit
         if (en) begin
-            case (opcode)
-                {% if 'sll' in ops %}
-                OPCODE_SLL:        result = A << B;
+            case (opcode) // asr, ror, rol, lsr
+                {% if 'lsl' in ops %} 
+                OPCODE_LSL: begin
+                    fill = 1'b0; // Fill bit for logical shift
+                    shift_left = 1'b1; // Logical shift left
+                end
                 {% endif %}
-                {% if 'srl' in ops %}
-                OPCODE_SRL:        result = A >> B;
+                {% if 'lsr' in ops %}
+                OPCODE_LSR: begin
+                    fill = 1'b0; // Fill bit for logical shift
+                    shift_right = 1'b1; // Logical shift right
+                end
                 {% endif %}
-                {% if 'sar' in ops %}
-                OPCODE_SAR:        result = $signed(A) >>> B;
+                {% if 'asr' in ops %}
+                OPCODE_ASR: begin
+                    fill = A[{{ width-1 }}]; // Fill bit for arithmetic shift
+                    shift_right = 1'b1; // Logical shift right
+                end
                 {% endif %}
-                {% if 'rotationleft' in ops %}
-                OPCODE_ROTATIONLEFT:   result = (A << B) | (A >> ({{ width }} - B));
+                {% if 'ror' in ops %}
+                OPCODE_ROR: begin
+                    rotate_right = 1'b1; // Rotate right
+                end
                 {% endif %}
-                {% if 'rotationright' in ops %}
-                OPCODE_ROTATIONRIGHT:  result = (A >> B) | (A << ({{ width }} - B));
+                {% if 'rol' in ops %}
+                OPCODE_ROL: begin
+                    rotate_left = 1'b1; // Rotate left
+                end
                 {% endif %}
-                default:           result = 0;
+                default: result = {{ width }}'b0;
             endcase
+
+            // Stage N
+            stage0 = A; // Initialize stage0 with input
+            {% for i in range(0, log2_width) %}
+            {% set shift_amt = 2**i %}
+            if (shamt[{{ i }}]) begin
+                {% if 'lsl' in ops %}
+                if (shift_left) begin
+                    stage{{ i+1 }} = {{ '{' }}stage{{ i }}[{{ width - shift_amt - 1 }}:0],  {{ '{' }}{{ shift_amt }}{{ '{' }}fill{{ '}' }}{{ '}' }}{{ '}' }};
+                end else
+                {% endif %}
+                {% if 'lsr' in ops or 'asr' in ops %}
+                if (shift_right) begin
+                    stage{{ i+1 }} = {{ '{' }}{{ '{' }}{{ shift_amt }}{{ '{' }}fill{{ '}' }}{{ '}' }}, stage{{ i }}[{{ width - 1 }}:{{ shift_amt }}]{{ '}' }};                
+                end
+                {% endif %}
+                {% if 'rol' in ops %}
+                if (rotate_left) begin
+                    stage{{ i+1 }} = {{ '{' }}stage{{ i }}[{{ width - shift_amt - 1 }}:0], stage{{ i }}[{{ width-1 }}:{{ width - shift_amt }}]{{ '}' }};
+                end else
+                {% endif %}
+                {% if 'ror' in ops %}
+                if (rotate_right) begin
+                    stage{{ i+1 }} = {{ '{' }}stage{{ i }}[{{ shift_amt - 1 }}:0], stage{{ i }}[{{ width - 1 }}:{{ shift_amt }}]{{ '}' }};
+                end
+                {% endif %}
+            end else begin
+                stage{{ i+1 }} = stage{{ i }};
+            end
+            {% endfor %}
+
         end
+
+        result = stage{{ log2_width }};
+
     end
 
 endmodule
+

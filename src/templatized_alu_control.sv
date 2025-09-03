@@ -1,4 +1,3 @@
-module templatized_alu_control (
     input  logic [3:0] op_code,
     output logic [2:0] en
 );
