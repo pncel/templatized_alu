@@ -11,14 +11,11 @@ from dora.core.arch.isa.ops import ArchOpType, OpType
 # shared information between generator and module.
 
 # === Supported Opcodes Definition ===
-# _SUPPORTED_OPCODE_GROUPS: Dict[str, List[str]] = {
 #     "add": ["add", "sub", "lt", "gt", "le", "ge"],
 #     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
 #     "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
-# }
 
-# === Tuple Approach ===
-# ArchDataType vs. str for tuple definitions? 
+# === namedtuple ===
 Operation = namedtuple("Operation", ["op_type", "num_operands", "result_type", "lhs_type", "rhs_type"])
 
 # operations are not groups here but renderer needs some classification to know which alus to generate or not generate
