@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 import math
-from common import OPERATIONS_US
+from external.alugen.lib.common import OPERATIONS_US
 
 from dora.core.arch.netlist.module import ArchModule
 
@@ -28,10 +28,6 @@ class ALUGenerator:
         self.env.filters['enumerate'] = enumerate
 
         self.module_name = "templatized_alu"
-        # self.group_map = {
-        #     group_info.group.value: [op.name for op in group_info.opcodes]
-        #     for group_info in SUPPORTED_GROUPS
-        # }
 
         self.group_map = {}
         for group, ops in OPERATIONS_US.items():
@@ -50,6 +46,7 @@ class ALUGenerator:
         ports_info = {}
         user_ops = self.config.operations
         first_op = True
+        dora_width = None
 
         for op_name, op_type in user_ops.items():
             ports = op_type.ports
@@ -58,8 +55,7 @@ class ALUGenerator:
             input_ports = ports[:-1]  # All but last are inputs
 
             # === Handle inputs ===
-            for i, port in enumerate(input_ports):
-                key = make_internal_key(i)
+            for key, port in enumerate(input_ports):
                 port_info = {
                     "name": port.name,
                     "bit_width": port.datatype.bit_width,
@@ -86,6 +82,7 @@ class ALUGenerator:
 
             if first_op:
                 ports_info["dora_result"] = result_info
+                dora_width = result_port.datatype.bit_width
                 first_op = False
             else:
                 expected = ports_info["dora_result"]
@@ -96,11 +93,6 @@ class ALUGenerator:
                         f"expected {expected}, got {result_info}"
                     )
 
-
-        input_A = ports_info_by_op.get("input_A")
-        # input_B = self.config.input_b_name
-        # input_C = self.config.input_c_name
-        # result = self.config.result_name
         # === Output File Directory === #
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -138,22 +130,18 @@ class ALUGenerator:
         # Determine the number of bits needed to select a group
         sel_width = max(1, math.ceil(math.log2(len(group_list))))
 
+        # depeneding on what port.datatype is, generate specific ALUs. 
+
         # === Generate group-specific ALUs === #
         for group in active_groups:
             template = self.env.get_template(f"{group}_group_template.sv.j2")
             rendered = template.render(
                 module_name = f"alu_{group}",
-                width       = width,
-                log2_width  = math.ceil(math.log2(width)),
+                width       = dora_width,
+                log2_width  = math.ceil(math.log2(dora_width)),
                 op_width    = op_width,
                 ops         = active_groups[group],
                 op_code     = {op: default_opcodes[op] for op in active_groups[group]},
-                input_A=input_a_port
-                # input_B=input_B,
-                # input_C=input_C,
-                # result=result,
-                # signed=is_signed,
-                # unsigned=is_unsigned
             )
             self._write_file(f"alu_{group}.sv", rendered)
 
@@ -173,7 +161,7 @@ class ALUGenerator:
         top_template = self.env.get_template("top_level_alu_template_v1.sv.j2")
         top_rendered = top_template.render(
             module_name=self.module_name,
-            width=width,
+            width=dora_width,
             ops=flattened_ops,
             op_width=op_width,
             groups=active_groups,
@@ -188,7 +176,7 @@ class ALUGenerator:
         mux_rendered = mux_template.render(
             group_list=group_list,
             num_inputs=len(group_list),
-            width=width
+            width=dora_width
         )
         self._write_file("mux_generic.sv", mux_rendered)
 
@@ -197,11 +185,3 @@ class ALUGenerator:
         with open(path, "w") as f:
             f.write(content)
         print(f"✅ Generated {path}")
-
-def make_internal_key(idx: int) -> str:
-    if idx == 0:
-        return "dora_input_a"
-    elif idx == 1:
-        return "dora_input_b"
-    elif idx == 2:
-        return "dora_input_c"
