@@ -1,0 +1,37 @@
+[project]
+name = "templatized_alu"
+version = "0.0.0"
+description = "Templatized ALU"
+authors = [
+    {name="Juwon Jun", email="jami3jun@uw.edu"},
+    {name="Ayush Kulkarni", email="ayushk22@uw.edu"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "future",
+    "jinja2",
+]
+
+[tool.poetry]
+packages = [
+    {include = "alugen"},
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.group.dev]
+optional = true
+
+
+[tool.poetry.group.dev.dependencies]
+sphinx = "*"
+furo = "*"
+mypy = "*"
+black = "*"
+pytest = "*"
+pytest-cov = "*"
