@@ -27,6 +27,7 @@ Operation = namedtuple("Operation", ["op_type", "num_operands", "operand_types"]
 OPERATIONS_US: Dict[str, List[Operation]] = {
     "add": [
         Operation(OpType.ADD, 2, (INT32, INT32, INT32)),
+        Operation(OpType.ADD, 2, (INT16, INT16, INT16)),
         Operation(OpType.SUB, 2, (INT32, INT32, INT32)),
         Operation(OpType.LT, 2, (INT32, INT32, BOOL)),
         Operation(OpType.GT, 2, (INT32, INT32, BOOL)),
