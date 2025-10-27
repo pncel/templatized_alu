@@ -8,7 +8,7 @@ module alu_add (
 );
     // Opcode constants
     {% for op in ops %}
-    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.upper() }} = {{ op_width }}'b{{ op_code[op] }};
+    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.op_type.name }} = {{ op_width }}'b{{ op_code[op] }};
     {% endfor %}
     // Internal signals
     logic [{{ width-1 }}:0] result_internal;

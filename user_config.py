@@ -7,24 +7,31 @@ from lib.alu_generator import ALUGenerator
 #    bool  group: "le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"
 #    shift group: "sll", "slr", "sar", "rotationleft", "rotationright"
 
+
 def main():
     # 1. Initialize datatype width
-    config = ALUConfig(
-        width=32
-    )
+    config = ALUConfig(width=32)
 
     # 2. Declare operations you need (validatated against SUPPORTED_OPCODES)
     #    Anything added not in SUPPORTED_OPCODES will raise an error.
     config.user_opcodes = [
-        "add", "sub", "lt", "gt",  # Arithmetic operations
-        "xor", "eq", "ne", "and",  # Boolean operations
-        "sll", "slr", "rotationleft"  # Shift operations
+        "add",
+        "sub",
+        "lt",
+        "gt",  # Arithmetic operations
+        "xor",
+        "eq",
+        "ne",
+        "and",  # Boolean operations
+        "sll",
+        "slr",
+        "rotationleft",  # Shift operations
     ]
 
     # 3. (Optional) Define input constraints for testing
     # If omitted, A and B defaults to [0, 2**width - 1]
-    config.range('A', 0, 100)
-    config.range('B', 0, 100)
+    config.range("A", 0, 100)
+    config.range("B", 0, 100)
 
     # # 4. Export constrains to JSON for generation.
     # json_path = "constraints.json"
@@ -48,6 +55,7 @@ def main():
         print(f"❌ {e}")
 
     print("🎉 All .sv files have been generated into ./src/")
+
 
 if __name__ == "__main__":
     main()

@@ -64,44 +64,51 @@ for op in SUPPORTED_OPCODES:
     elif op == "slr":
         OP_FUNCS[op] = lambda a, b: (a % (1 << WIDTH)) >> b
     elif op == "sar":
-        OP_FUNCS[op] = lambda a, b: (a >> b) if a < (1 << (WIDTH-1)) else ((a | ~((1 << WIDTH)-1)) >> b)
+        OP_FUNCS[op] = lambda a, b: (
+            (a >> b) if a < (1 << (WIDTH - 1)) else ((a | ~((1 << WIDTH) - 1)) >> b)
+        )
     elif op == "rotationleft":
-        OP_FUNCS[op] = lambda a, b: ((a << (b % WIDTH)) | (a >> (WIDTH - (b % WIDTH)))) & ((1 << WIDTH) - 1)
+        OP_FUNCS[op] = lambda a, b: (
+            (a << (b % WIDTH)) | (a >> (WIDTH - (b % WIDTH)))
+        ) & ((1 << WIDTH) - 1)
     elif op == "rotationright":
-        OP_FUNCS[op] = lambda a, b: ((a >> (b % WIDTH)) | (a << (WIDTH - (b % WIDTH)))) & ((1 << WIDTH) - 1)
+        OP_FUNCS[op] = lambda a, b: (
+            (a >> (b % WIDTH)) | (a << (WIDTH - (b % WIDTH)))
+        ) & ((1 << WIDTH) - 1)
     else:
-        raise NotImplementedError(f"Expected-result function not defined for opcode '{op}'")
+        raise NotImplementedError(
+            f"Expected-result function not defined for opcode '{op}'"
+        )
+
 
 # 3. Functional coverage definitions
-@CoverPoint(
-    "top.opcode",
-    xf=lambda op: op,
-    bins=SUPPORTED_OPCODES,
-    at_least=1
-)
+@CoverPoint("top.opcode", xf=lambda op: op, bins=SUPPORTED_OPCODES, at_least=1)
 def cover_opcode(op):
     "Record which opcodes have been exercised."
     pass
 
+
 @CoverPoint(
     "top.a_value",
-    xf=lambda a: "min" if a==A_min else ("max" if a==A_max else "mid"),
-    bins=["min","mid","max"],
-    at_least=1
+    xf=lambda a: "min" if a == A_min else ("max" if a == A_max else "mid"),
+    bins=["min", "mid", "max"],
+    at_least=1,
 )
 def cover_a(a):
     "Record A in three zones: min, mid, max."
     pass
 
+
 @CoverPoint(
     "top.b_value",
-    xf=lambda b: "min" if b==B_min else ("max" if b==B_max else "mid"),
-    bins=["min","mid","max"],
-    at_least=1
+    xf=lambda b: "min" if b == B_min else ("max" if b == B_max else "mid"),
+    bins=["min", "mid", "max"],
+    at_least=1,
 )
 def cover_b(b):
     "Record B in three zones: min, mid, max."
     pass
+
 
 # 4. Main test: apply stimulus, collect coverage, and check correctness
 @cocotb.test()
@@ -123,13 +130,13 @@ async def test_templatized_alu(dut):
         await RisingEdge(dut.clk)
         # Choose random inputs
         opcode = random.choice(SUPPORTED_OPCODES)
-        a_val  = random.randint(A_min, A_max)
-        b_val  = random.randint(B_min, B_max)
+        a_val = random.randint(A_min, A_max)
+        b_val = random.randint(B_min, B_max)
 
         # Drive DUT signals
         dut.op.value = SUPPORTED_OPCODES.index(opcode)
-        dut.A.value      = a_val
-        dut.B.value      = b_val
+        dut.A.value = a_val
+        dut.B.value = b_val
         # Wait for output to stabilize
         await Timer(10, units="ns")
 
@@ -143,8 +150,10 @@ async def test_templatized_alu(dut):
         expected = OP_FUNCS[opcode](a_val, b_val)
         if actual != expected:
             # Don't assert immediately; record the failure
-            msg = (f"Mismatch: op={opcode}, A={a_val}, B={b_val}, "
-                   f"expect={expected}, got={actual}")
+            msg = (
+                f"Mismatch: op={opcode}, A={a_val}, B={b_val}, "
+                f"expect={expected}, got={actual}"
+            )
             failures.append(msg)
 
     # 5. Report coverage and fail if any bin is missing

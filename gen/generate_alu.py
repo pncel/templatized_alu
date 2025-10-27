@@ -31,7 +31,6 @@ group_map = {
     "add": ["add", "sub", "lt", "gt", "le", "ge"],
     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
     "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
-    
     # for later :)
     # "multiplication": [],
     # "division": []
@@ -73,34 +72,34 @@ op_width = max(1, math.ceil(math.log2(enabled_ops_count)))
 # === Assign Default Opcodes === #
 default_opcodes = {}
 for index, op in enumerate(flattened_ops):
-    code = format(index, f'0{op_width}b')
+    code = format(index, f"0{op_width}b")
     default_opcodes[op] = code
 
-# === Jinja2 Rendering === # 
+# === Jinja2 Rendering === #
 env = Environment(
-    loader        = FileSystemLoader("templates"),
-    trim_blocks   = True,
-    lstrip_blocks = True,
+    loader=FileSystemLoader("templates"),
+    trim_blocks=True,
+    lstrip_blocks=True,
 )
 
 # add enumerate() as a filter:
-env.filters['enumerate'] = enumerate
+env.filters["enumerate"] = enumerate
 
 # === Output File Directory === #
 output_dir = "src"
 os.makedirs(output_dir, exist_ok=True)
 
 # === Render each group‐ALU only if it’s active ===
-for group in group_map.keys(): # ["addgroup", "boolgroup", "shiftgroup"]:
+for group in group_map.keys():  # ["addgroup", "boolgroup", "shiftgroup"]:
     if group in active_groups:
-        tmpl        = env.get_template(f"{group}_group_template.sv.j2")
+        tmpl = env.get_template(f"{group}_group_template.sv.j2")
         # pass only that group’s ops & opcodes
-        rendered    = tmpl.render(
-            module_name   = f"alu_{group}",
-            width         = width,
-            op_width      = op_width,
-            ops           = active_groups[group],
-            op_code       = { op: default_opcodes[op] for op in active_groups[group] },
+        rendered = tmpl.render(
+            module_name=f"alu_{group}",
+            width=width,
+            op_width=op_width,
+            ops=active_groups[group],
+            op_code={op: default_opcodes[op] for op in active_groups[group]},
         )
         path = os.path.join(output_dir, f"alu_{group}.sv")
         with open(path, "w") as f:
@@ -116,12 +115,12 @@ sel_width = max(1, math.ceil(math.log2(len(group_list))))
 
 control_tmpl = env.get_template("control_module_template.sv.j2")
 control_rendered = control_tmpl.render(
-    module_name = module_name,
-    op_width    = op_width,
-    sel_width   = sel_width,
-    groups      = active_groups,
-    group_list  = group_list,
-    op_code     = { op: default_opcodes[op] for op in flattened_ops }
+    module_name=module_name,
+    op_width=op_width,
+    sel_width=sel_width,
+    groups=active_groups,
+    group_list=group_list,
+    op_code={op: default_opcodes[op] for op in flattened_ops},
 )
 control_path = os.path.join(output_dir, f"{module_name}_control.sv")
 with open(control_path, "w") as f:
@@ -153,9 +152,7 @@ print(f"✅ Generated {top_path}")
 # === Generate Mux === #
 mux_tmpl = env.get_template("Mux_template.sv.j2")
 mux_rendered = mux_tmpl.render(
-    group_list = group_list,
-    num_inputs = active_group_count,
-    width      = width
+    group_list=group_list, num_inputs=active_group_count, width=width
 )
 mux_path = os.path.join(output_dir, f"mux_generic.sv")
 with open(mux_path, "w") as f:

@@ -16,48 +16,49 @@ def make_ports(datatypes):
     ports.append(ArchPort("dora_result", datatypes[0]))  # output last
     return ReadonlySequenceProxy(ports)
 
+
 USER_OPS = {
     "ADD": ArchOpType(
         optype=OpType.ADD,
         name="ADD",
         num_inputs=2,
         datatypes=ReadonlySequenceProxy([INT32, INT32, INT32]),
-        ports=make_ports([INT32, INT32, INT32])
+        ports=make_ports([INT32, INT32, INT32]),
     ),
     "SUB": ArchOpType(
         optype=OpType.SUB,
         name="SUB",
         num_inputs=2,
         datatypes=ReadonlySequenceProxy([INT32, INT32, INT32]),
-        ports=make_ports([INT32, INT32, INT32])
+        ports=make_ports([INT32, INT32, INT32]),
     ),
     "AND": ArchOpType(
         optype=OpType.AND,
         name="AND",
         num_inputs=2,
         datatypes=ReadonlySequenceProxy([BOOL, INT32, INT32]),
-        ports=make_ports([BOOL, INT32, INT32])
+        ports=make_ports([BOOL, INT32, INT32]),
     ),
     "OR": ArchOpType(
         optype=OpType.OR,
         name="OR",
         num_inputs=2,
         datatypes=ReadonlySequenceProxy([BOOL, INT32, INT32]),
-        ports=make_ports([BOOL, INT32, INT32])
+        ports=make_ports([BOOL, INT32, INT32]),
     ),
     "LSL": ArchOpType(
         optype=OpType.LSL,
         name="LSL",
         num_inputs=2,
         datatypes=ReadonlySequenceProxy([INT32, INT32, INT32]),
-        ports=make_ports([INT32, INT32, INT32])
+        ports=make_ports([INT32, INT32, INT32]),
     ),
     "LSR": ArchOpType(
         optype=OpType.LSR,
         name="LSR",
         num_inputs=2,
         datatypes=ReadonlySequenceProxy([INT32, INT32, INT32]),
-        ports=make_ports([INT32, INT32, INT32])
+        ports=make_ports([INT32, INT32, INT32]),
     ),
 }
 
@@ -70,5 +71,5 @@ mock_module = ArchModule(
     instantiations=[],
     nets=[],
     connections={},
-    operations=USER_OPS
+    operations=USER_OPS,
 )

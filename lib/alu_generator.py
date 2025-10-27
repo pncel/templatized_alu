@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 import math
-from common import OPERATIONS_US
+from lib.common import OPERATIONS_US
 
 from dora.core.arch.netlist.module import ArchModule
 
@@ -12,6 +12,7 @@ class ALUGenerator:
     Configuration includes the width of the ALU, user-defined opcodes, and input constraints and comes from
     an instance of ALUConfig class from the `alu_config` module.
     """
+
     def __init__(self, config: "ArchModule", output_dir: str = "src"):
         """
         Initialize the ALUGenerator with a configuration and output directory.
@@ -19,22 +20,25 @@ class ALUGenerator:
         self.config = config
         self.output_dir = output_dir
         # === Jinja2 Rendering === #
+        # Get the directory where this file is located and find templates relative to it
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        templates_dir = os.path.join(current_dir, "..", "templates")
         self.env = Environment(
-            loader=FileSystemLoader("templates"),
+            loader=FileSystemLoader(templates_dir),
             trim_blocks=True,
             lstrip_blocks=True,
         )
         # add enumerate() as a filter:
-        self.env.filters['enumerate'] = enumerate
+        self.env.filters["enumerate"] = enumerate
 
         self.module_name = "templatized_alu"
 
-        self.group_map = {}
-        for group, ops in OPERATIONS_US.items():
-            op_names = []
-            for op in ops:
-                op_names.append(op.op_type.name)
-            self.group_map[group] = op_names
+        self.group_map = OPERATIONS_US
+        # for group, ops in OPERATIONS_US.items():
+        #     op_names = []
+        #     for op in ops:
+        #         op_names.append(op.op_type.name)
+        #     self.group_map[group] = op_names
 
     def generate(self):
         """
@@ -59,15 +63,17 @@ class ALUGenerator:
                 port_info = {
                     "name": port.name,
                     "bit_width": port.datatype.bit_width,
-                    "datatype": port.datatype
+                    "datatype": port.datatype,
                 }
 
                 if first_op:
                     ports_info[key] = port_info
                 else:
                     expected = ports_info[key]
-                    if (expected["bit_width"] != port.datatype.bit_width or
-                        expected["datatype"] != port.datatype):
+                    if (
+                        expected["bit_width"] != port.datatype.bit_width
+                        or expected["datatype"] != port.datatype
+                    ):
                         raise TypeError(
                             f"Port mismatch for {key} in {op_name}: "
                             f"expected {expected}, got {port_info}"
@@ -77,7 +83,7 @@ class ALUGenerator:
             result_info = {
                 "name": result_port.name,
                 "bit_width": result_port.datatype.bit_width,
-                "datatype": result_port.datatype
+                "datatype": result_port.datatype,
             }
 
             if first_op:
@@ -86,8 +92,10 @@ class ALUGenerator:
                 first_op = False
             else:
                 expected = ports_info["dora_result"]
-                if (expected["bit_width"] != result_port.datatype.bit_width or
-                    expected["datatype"] != result_port.datatype):
+                if (
+                    expected["bit_width"] != result_port.datatype.bit_width
+                    or expected["datatype"] != result_port.datatype
+                ):
                     raise TypeError(
                         f"Result mismatch in {op_name}: "
                         f"expected {expected}, got {result_info}"
@@ -102,7 +110,16 @@ class ALUGenerator:
         active_groups = {}
         for group, members in self.group_map.items():
             # Keep only the operations that the user explicitly selected
-            selected_ops = [op for op in members if op in user_ops]
+            selected_ops = []
+            for op in members:
+                for user_op in user_ops.values():
+                    if (
+                        op.op_type == user_op.optype
+                        and op.num_operands == user_op.num_inputs
+                        and tuple(op.operand_types) == tuple(user_op.datatypes)
+                    ):
+                        selected_ops.append(op)
+                        break
             if selected_ops:
                 active_groups[group] = selected_ops
 
@@ -124,24 +141,28 @@ class ALUGenerator:
         # === Assign Default Opcodes === #
         default_opcodes = {}
         for i, op in enumerate(flattened_ops):
-            code = format(i, f'0{op_width}b')
+            code = format(i, f"0{op_width}b")
             default_opcodes[op] = code
-        
+
         # Determine the number of bits needed to select a group
         sel_width = max(1, math.ceil(math.log2(len(group_list))))
 
-        # depeneding on what port.datatype is, generate specific ALUs. 
+        # depeneding on what port.datatype is, generate specific ALUs.
 
         # === Generate group-specific ALUs === #
+
+        # Print flattened_ops
+        print(f"Flattened ops: {flattened_ops}")
+
         for group in active_groups:
             template = self.env.get_template(f"{group}_group_template.sv.j2")
             rendered = template.render(
-                module_name = f"alu_{group}",
-                width       = dora_width,
-                log2_width  = math.ceil(math.log2(dora_width)),
-                op_width    = op_width,
-                ops         = active_groups[group],
-                op_code     = {op: default_opcodes[op] for op in active_groups[group]},
+                module_name=f"alu_{group}",
+                width=dora_width,
+                log2_width=math.ceil(math.log2(dora_width)),
+                op_width=op_width,
+                ops=active_groups[group],
+                op_code={op: default_opcodes[op] for op in active_groups[group]},
             )
             self._write_file(f"alu_{group}.sv", rendered)
 
@@ -153,12 +174,13 @@ class ALUGenerator:
             sel_width=sel_width,
             groups=active_groups,
             group_list=group_list,
-            op_code=default_opcodes
+            op_code=default_opcodes,
         )
         self._write_file(f"{self.module_name}_control.sv", control_rendered)
 
         # === Top-Level ALU === #
         top_template = self.env.get_template("top_level_alu_template_v1.sv.j2")
+
         top_rendered = top_template.render(
             module_name=self.module_name,
             width=dora_width,
@@ -167,16 +189,14 @@ class ALUGenerator:
             groups=active_groups,
             group_list=group_list,
             active_group_count=len(active_groups),
-            sel_width=sel_width
+            sel_width=sel_width,
         )
         self._write_file(f"{self.module_name}.sv", top_rendered)
 
         # === Mux === #
         mux_template = self.env.get_template("Mux_template.sv.j2")
         mux_rendered = mux_template.render(
-            group_list=group_list,
-            num_inputs=len(group_list),
-            width=dora_width
+            group_list=group_list, num_inputs=len(group_list), width=dora_width
         )
         self._write_file("mux_generic.sv", mux_rendered)
 
