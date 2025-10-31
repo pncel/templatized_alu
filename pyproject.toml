@@ -1,22 +1,20 @@
-[project]
-name = "templatized_alu"
+[tool.poetry]
+name = "templatized-alu"
 version = "0.0.0"
 description = "Templatized ALU"
 authors = [
-    {name="Juwon Jun", email="jami3jun@uw.edu"},
-    {name="Ayush Kulkarni", email="ayushk22@uw.edu"}
+    "Juwon Jun <jami3jun@uw.edu>",
+    "Ayush Kulkarni <ayushk22@uw.edu>"
 ]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "future",
-    "jinja2",
-]
-
-[tool.poetry]
 packages = [
     {include = "alugen"},
 ]
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+future = "*"
+jinja2 = "*"
 
 
 [build-system]
