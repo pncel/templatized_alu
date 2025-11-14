@@ -52,4 +52,8 @@ OPERATIONS_US: Dict[str, List[Operation]] = {
         Operation(OpType.ROL, 2, (INT32, INT32, INT32)),
         Operation(OpType.ROR, 2, (INT32, INT32, INT32)),
     ],
+    "mul": [
+        # multiplier: keep result width same as inputs (truncated) so it fits the existing ALU result conventions
+        Operation(OpType.MUL, 2, (INT32, INT32, INT32)),
+    ],
 }
