@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 import math
-from lib.common import OPERATIONS_US
+from alugen.lib.common import OPERATIONS_US
 
 from dora.core.arch.netlist.module import ArchModule
 
