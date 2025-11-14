@@ -31,7 +31,7 @@ class ALUGenerator:
         # add enumerate() as a filter:
         self.env.filters["enumerate"] = enumerate
 
-        self.module_name = "templatized_alu"
+        self.module_name = config.name
 
         self.group_map = OPERATIONS_US
         # for group, ops in OPERATIONS_US.items():
