@@ -19,6 +19,7 @@ from dora.core.arch.isa.ops import ArchOpType, OpType
 #     "add": ["add", "sub", "lt", "gt", "le", "ge"],
 #     "bool": ["le", "ge", "xor", "eq", "ne", "and", "or", "not", "nand", "nor", "xnor"],
 #     "shift": ["sll", "slr", "sar", "rotationleft", "rotationright"],
+#     "mul": ["mul"]
 
 # === namedtuple ===
 Operation = namedtuple("Operation", ["op_type", "num_operands", "operand_types"])
