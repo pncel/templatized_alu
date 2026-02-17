@@ -45,13 +45,16 @@ module alu_mul (
         if (en) begin
             // generate radix-4 Booth partial products
             for (i = 0; i < PP; i = i + 1) begin
-                // examine bits: b_{2i+1}, b_{2i}, b_{2i-1}
+                // examine bits: y_{2i+1}, y_{2i}, y_{2i-1}
+                // where y_{-1}=0 is stored at b_ext[0] and y_k=B[k] at b_ext[k+1]
                 logic [2:0] trip;
-                int idx_hi = 2*i + 1;
+                int idx_hi = 2*i + 2;
+                int idx_mid = 2*i + 1;
+                int idx_lo = 2*i;
                 // safely extract bits (if out-of-range, treat as 0)
-                trip[2] = (idx_hi < W) ? b_ext[idx_hi] : 1'b0;
-                trip[1] = (2*i < W) ? b_ext[2*i] : 1'b0;
-                trip[0] = (2*i - 1 >= 0) ? b_ext[2*i - 1] : 1'b0;
+                trip[2] = (idx_hi <= W) ? b_ext[idx_hi] : 1'b0;
+                trip[1] = (idx_mid <= W) ? b_ext[idx_mid] : 1'b0;
+                trip[0] = (idx_lo <= W) ? b_ext[idx_lo] : 1'b0;
 
                 // Booth encoding radix-4
                 // 000 -> 0; 001/010 -> +1*M; 011 -> +2*M;

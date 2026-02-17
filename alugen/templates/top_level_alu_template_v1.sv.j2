@@ -1,9 +1,9 @@
 module {{ module_name }} (
-  input  logic        clk,
+  input  logic        clk_i,
   input  logic [{{width-1}}:0]  A,
   input  logic [{{width-1}}:0]  B,
-  input  logic [{{op_width-1}}:0] prog_data,
-  input  logic        prog_done,
+  input  logic [{{op_width-1}}:0] prog_data_i,
+  input  logic        prog_done_i,
   output logic [{{width-1}}:0]  out
 );
 
@@ -16,7 +16,7 @@ module {{ module_name }} (
   logic [{{width-1}}:0] B_data;
 
   // Optional ready-controlled input sampling (for future multi-cycle ops)
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk_i) begin
     // if (ready) begin (for future multi-cycle ops)
       A_data <= A;
       B_data <= B;
@@ -25,7 +25,7 @@ module {{ module_name }} (
 
   // Instantiate control module
   {{ module_name }}_control control_inst (
-    .op_code (prog_data),
+    .op_code (prog_data_i),
     .en      (en)
   );
 
@@ -34,7 +34,7 @@ module {{ module_name }} (
   alu_{{group}} alu_{{group}}_inst_{{i}} (
     .A     (A_data),
     .B     (B_data),
-    .opcode(prog_data),
+    .opcode(prog_data_i),
     .en    (en[{{i}}]),
     .result(temp[{{i}}])
   );
@@ -46,11 +46,11 @@ module {{ module_name }} (
     .in_{{ group }}   ( temp[{{ loop.index0 }}] ),
     {% endfor %}
     .en           ( en ),
-    .clk          ( clk ),
+    .clk_i          ( clk_i ),
     .out          ( out_internal )
   );
 
   // Gate output with prog_done
-  assign out = prog_done ? out_internal : {{width}}'b0;
+  assign out = prog_done_i ? out_internal : {{width}}'b0;
 
 endmodule

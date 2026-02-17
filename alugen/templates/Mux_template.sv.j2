@@ -3,7 +3,7 @@ module mux_generic (
     input  logic [{{ width-1 }}:0] in_{{ group }},
     {% endfor %}
     input  logic [{{ group_list|length-1 }}:0] en,
-    input  logic        clk,
+    input  logic        clk_i,
     output logic [{{ width-1 }}:0] out
 );
 
@@ -18,7 +18,7 @@ module mux_generic (
         {% endfor %}
     end
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk_i) begin
         out <= out_comb;
     end
 
