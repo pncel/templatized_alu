@@ -28,7 +28,9 @@ OPERATIONS_US: Dict[str, List[Operation]] = {
     "add": [
         Operation(OpType.ADD, 2, (INT32, INT32, INT32)),
         Operation(OpType.ADD, 2, (INT16, INT16, INT16)),
+        Operation(OpType.ADD, 2, (INT8, INT8, INT8)),
         Operation(OpType.SUB, 2, (INT32, INT32, INT32)),
+        Operation(OpType.SUB, 2, (INT8, INT8, INT8)),
         Operation(OpType.LT, 2, (INT32, INT32, BOOL)),
         Operation(OpType.GT, 2, (INT32, INT32, BOOL)),
         Operation(OpType.LE, 2, (INT32, INT32, BOOL)),
@@ -55,5 +57,6 @@ OPERATIONS_US: Dict[str, List[Operation]] = {
     "mul": [
         # multiplier: keep result width same as inputs (truncated) so it fits the existing ALU result conventions
         Operation(OpType.MUL, 2, (INT32, INT32, INT32)),
+        Operation(OpType.MUL, 2, (INT8, INT8, INT8)),
     ],
 }
