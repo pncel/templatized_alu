@@ -48,15 +48,13 @@ class ALUGenerator:
         # NOTE: In the future, if groups require distinct bit-widths/ports,
         #       create ports_info_add / ports_info_bool / ports_info_shift here.
         ports_info = {}
-        user_ops = self.config.operations
+        user_ops = self.config.operation_bindings
         first_op = True
         dora_width = None
 
-        for op_name, op_type in user_ops.items():
-            ports = op_type.ports
-
-            result_port = ports[-1]  # Last port is always the result
-            input_ports = ports[:-1]  # All but last are inputs
+        for op_name, binding in user_ops.items():
+            input_ports = [b.port for b in binding.input_bindings]
+            result_port = binding.output_bindings[0].port
 
             # === Handle inputs ===
             for key, port in enumerate(input_ports):
@@ -112,11 +110,16 @@ class ALUGenerator:
             # Keep only the operations that the user explicitly selected
             selected_ops = []
             for op in members:
-                for user_op in user_ops.values():
+                for binding in user_ops.values():
+                    binding_type_ids = tuple(
+                        b.port.datatype.type_id for b in binding.input_bindings
+                    ) + tuple(
+                        b.port.datatype.type_id for b in binding.output_bindings
+                    )
                     if (
-                        op.op_type == user_op.optype
-                        and op.num_operands == user_op.num_inputs
-                        and tuple(op.operand_types) == tuple(user_op.datatypes)
+                        op.op_type == binding.operation.mnemonic
+                        and op.num_operands == len(binding.input_bindings)
+                        and tuple(op.operand_types) == binding_type_ids
                     ):
                         selected_ops.append(op)
                         break

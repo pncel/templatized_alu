@@ -1,4 +1,3 @@
-from dora.core.arch.isa.ops import OpType, ArchOpType
 from dora.core.arch.netlist.net import ArchPort
 from dora.utils.proxy import ReadonlySequenceProxy
 from dora.core.common.types import ModuleType, PlaneType

@@ -7,12 +7,12 @@
 {% set has_le = namespace(value=false) %}
 {% set has_ge = namespace(value=false) %}
 {% for op in ops %}
-  {% if op.op_type.name == 'ADD' %}{% set has_add.value = true %}{% endif %}
-  {% if op.op_type.name == 'SUB' %}{% set has_sub.value = true %}{% endif %}
-  {% if op.op_type.name == 'LT' %}{% set has_lt.value = true %}{% endif %}
-  {% if op.op_type.name == 'GT' %}{% set has_gt.value = true %}{% endif %}
-  {% if op.op_type.name == 'LE' %}{% set has_le.value = true %}{% endif %}
-  {% if op.op_type.name == 'GE' %}{% set has_ge.value = true %}{% endif %}
+  {% if op.op_type | upper == 'ADD' %}{% set has_add.value = true %}{% endif %}
+  {% if op.op_type | upper == 'SUB' %}{% set has_sub.value = true %}{% endif %}
+  {% if op.op_type | upper == 'LT' %}{% set has_lt.value = true %}{% endif %}
+  {% if op.op_type | upper == 'GT' %}{% set has_gt.value = true %}{% endif %}
+  {% if op.op_type | upper == 'LE' %}{% set has_le.value = true %}{% endif %}
+  {% if op.op_type | upper == 'GE' %}{% set has_ge.value = true %}{% endif %}
 {% endfor %}
 module alu_add (
     input  logic [{{ width-1 }}:0] A,
@@ -23,7 +23,7 @@ module alu_add (
 );
     // Opcode constants
     {% for op in ops %}
-    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.op_type.name }} = {{ op_width }}'b{{ op_code[op] }};
+    localparam [{{ op_width - 1 }}:0] OPCODE_{{ op.op_type | upper }} = {{ op_width }}'b{{ op_code[op] }};
     {% endfor %}
     // Internal signals
     logic [{{ width-1 }}:0] result_internal;
