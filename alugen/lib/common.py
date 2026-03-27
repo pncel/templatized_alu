@@ -34,6 +34,7 @@ OPERATIONS_US: Dict[str, List[Operation]] = {
         Operation("add", 2, (INT8, INT8, INT8)),
         Operation("sub", 2, (INT32, INT32, INT32)),
         Operation("sub", 2, (INT8, INT8, INT8)),
+        Operation("sub", 2, (INT16, INT16, INT16)),
         Operation("lt",  2, (INT32, INT32, BOOL)),
         Operation("gt",  2, (INT32, INT32, BOOL)),
         Operation("le",  2, (INT32, INT32, BOOL)),
@@ -60,6 +61,7 @@ OPERATIONS_US: Dict[str, List[Operation]] = {
     "mul": [
         # multiplier: keep result width same as inputs (truncated) so it fits the existing ALU result conventions
         Operation("mul", 2, (INT32, INT32, INT32)),
+        Operation("mul", 2, (INT16, INT16, INT16)),
         Operation("mul", 2, (INT8, INT8, INT8)),
     ],
 }
