@@ -49,7 +49,6 @@ class ALUGenerator:
         #       create ports_info_add / ports_info_bool / ports_info_shift here.
         ports_info = {}
         user_ops = self.config.operation_bindings
-        first_op = True
         dora_width = None
 
         for op_name, binding in user_ops.items():
@@ -64,7 +63,8 @@ class ALUGenerator:
                     "datatype": port.datatype,
                 }
 
-                if first_op:
+                if key not in ports_info:
+                    # New port slot — register it (e.g. FMA's third input C)
                     ports_info[key] = port_info
                 else:
                     expected = ports_info[key]
@@ -73,8 +73,9 @@ class ALUGenerator:
                         or expected["datatype"] != port.datatype
                     ):
                         raise TypeError(
-                            f"Port mismatch for {key} in {op_name}: "
-                            f"expected {expected}, got {port_info}"
+                            f"Type mismatch for input {key} in {op_name}: "
+                            f"expected {expected['datatype']}, got {port_info['datatype']}. "
+                            f"Cross-type operations are not supported."
                         )
 
             # === Handle result ===
@@ -84,10 +85,9 @@ class ALUGenerator:
                 "datatype": result_port.datatype,
             }
 
-            if first_op:
+            if "dora_result" not in ports_info:
                 ports_info["dora_result"] = result_info
                 dora_width = result_port.datatype.bit_width
-                first_op = False
             else:
                 expected = ports_info["dora_result"]
                 if (
@@ -95,8 +95,9 @@ class ALUGenerator:
                     or expected["datatype"] != result_port.datatype
                 ):
                     raise TypeError(
-                        f"Result mismatch in {op_name}: "
-                        f"expected {expected}, got {result_info}"
+                        f"Type mismatch for result in {op_name}: "
+                        f"expected {expected['datatype']}, got {result_info['datatype']}. "
+                        f"Cross-type operations are not supported."
                     )
 
         # === Output File Directory === #
@@ -157,7 +158,12 @@ class ALUGenerator:
         # Print flattened_ops
         print(f"Flattened ops: {flattened_ops}")
 
+        # fma is wired entirely in the top-level — no standalone module needed
+        _TOP_LEVEL_ONLY_GROUPS = {"fma"}
+
         for group in active_groups:
+            if group in _TOP_LEVEL_ONLY_GROUPS:
+                continue
             template = self.env.get_template(f"{group}_group_template.sv.j2")
             rendered = template.render(
                 module_name=f"alu_{group}",

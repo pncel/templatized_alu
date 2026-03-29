@@ -1,36 +1,91 @@
+{% set has_fma = "fma" in group_list %}
+{% if has_fma %}
+{% set add_idx = group_list.index("add") %}
+{% set mul_idx = group_list.index("mul") %}
+{% set fma_idx = group_list.index("fma") %}
+{% endif %}
 module {{ module_name }} (
-  input  logic        clk_i,
-  input  logic [{{width-1}}:0]  A,
-  input  logic [{{width-1}}:0]  B,
+  input  logic                    clk_i,
+  input  logic [{{width-1}}:0]    A,
+  input  logic [{{width-1}}:0]    B,
+  {% if has_fma %}
+  input  logic [{{width-1}}:0]    C,
+  {% endif %}
   input  logic [{{op_width-1}}:0] prog_data_i,
-  input  logic        prog_done_i,
-  output logic [{{width-1}}:0]  out
+  input  logic                    prog_done_i,
+  output logic [{{width-1}}:0]    out
 );
 
   logic [{{width-1}}:0] temp [{{group_list|length-1}}:0];
-  logic [{{ group_list|length - 1 }}:0] en;
+  logic [{{group_list|length-1}}:0] en;
   logic [{{width-1}}:0] out_internal;
 
-  // Registered inputs
-  logic [{{width-1}}:0] A_data;
-  logic [{{width-1}}:0] B_data;
-
-  // Optional ready-controlled input sampling (for future multi-cycle ops)
+  // --- Registered inputs ---
+  logic [{{width-1}}:0] A_data, B_data;
+  {% if has_fma %}
+  logic [{{width-1}}:0] C_data;
+  {% endif %}
   always_ff @(posedge clk_i) begin
-    // if (ready) begin (for future multi-cycle ops)
-      A_data <= A;
-      B_data <= B;
-    // end
+    A_data <= A;
+    B_data <= B;
+    {% if has_fma %}
+    C_data <= C;
+    {% endif %}
   end
 
-  // Instantiate control module
+  {% if has_fma %}
+  // --- FMA pipeline register (stage 1 → stage 2), ICG on en_fma ---
+  // Taps temp[mul_idx] directly; C_data aligned alongside
+  logic [{{width-1}}:0] mul_result_reg;
+  logic [{{width-1}}:0] C_pipe;
+  always_ff @(posedge clk_i) begin
+    if (en[{{fma_idx}}]) begin
+      mul_result_reg <= temp[{{mul_idx}}];
+      C_pipe         <= C_data;
+    end
+  end
+
+  // --- Effective enables: fma needs both mul and add to run ---
+  logic en_mul_eff, en_add_eff;
+  assign en_mul_eff = en[{{mul_idx}}] | en[{{fma_idx}}];
+  assign en_add_eff = en[{{add_idx}}] | en[{{fma_idx}}];
+
+  // --- Bypass muxes for add inputs ---
+  //   fma:     add.A = mul_result_reg,  add.B = C_pipe
+  //   add/sub: add.A = A_data,          add.B = B_data
+  logic [{{width-1}}:0] add_a_in, add_b_in;
+  assign add_a_in = en[{{fma_idx}}] ? mul_result_reg : A_data;
+  assign add_b_in = en[{{fma_idx}}] ? C_pipe         : B_data;
+  {% endif %}
+
+  // --- Control module ---
   {{ module_name }}_control control_inst (
     .op_code (prog_data_i),
     .en      (en)
   );
 
-  // ALU group instantiations
+  // --- ALU group instantiations ---
   {% for i, group in group_list|enumerate %}
+  {% if group == "fma" %}
+  // fma: no module — result forwarded from alu_add output
+  assign temp[{{i}}] = temp[{{add_idx}}];
+  {% elif group == "mul" and has_fma %}
+  alu_mul alu_mul_inst_{{i}} (
+    .A     (A_data),
+    .B     (B_data),
+    .opcode(prog_data_i),
+    .en    (en_mul_eff),
+    .result(temp[{{i}}])
+  );
+  {% elif group == "add" and has_fma %}
+  alu_add alu_add_inst_{{i}} (
+    .A     (add_a_in),
+    .B     (add_b_in),
+    .opcode(prog_data_i),
+    .en    (en_add_eff),
+    .result(temp[{{i}}])
+  );
+  {% else %}
   alu_{{group}} alu_{{group}}_inst_{{i}} (
     .A     (A_data),
     .B     (B_data),
@@ -38,16 +93,17 @@ module {{ module_name }} (
     .en    (en[{{i}}]),
     .result(temp[{{i}}])
   );
+  {% endif %}
   {% endfor %}
 
-  // Output mux
+  // --- Output mux ---
   mux_generic mux_generic_inst (
     {% for group in group_list %}
-    .in_{{ group }}   ( temp[{{ loop.index0 }}] ),
+    .in_{{group}} ( temp[{{loop.index0}}] ),
     {% endfor %}
-    .en           ( en ),
-    .clk_i          ( clk_i ),
-    .out          ( out_internal )
+    .en    ( en ),
+    .clk_i ( clk_i ),
+    .out   ( out_internal )
   );
 
   // Gate output with prog_done
