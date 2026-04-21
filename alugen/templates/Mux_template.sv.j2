@@ -18,8 +18,7 @@ module mux_generic (
         {% endfor %}
     end
 
-    always_ff @(posedge clk_i) begin
-        out <= out_comb;
-    end
+    assign out = out_comb;
+    
 
 endmodule
